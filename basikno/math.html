@@ -1,0 +1,2403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter Explorer</title>
+    <!-- Inter font from Google Fonts for universal readability across various devices -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN for responsive and modern styling, providing utility classes for rapid development -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Define your color palette using CSS variables for easy theme management and consistency */
+        :root {
+            /* Dark Mode Variables: Deep, vibrant colors for an immersive feel */
+            --dark-space: #0f0a1c; /* Even deeper background, almost black with a purple tint */
+            --deep-purple: #2c0b4f; /* Main container/card background, richer dark purple */
+            --electric-blue: #0084ff; /* Slightly brighter electric blue for main accents */
+            --cosmic-purple: #7a1ee6; /* Vivid purple for subtle accents and borders */
+            --light-purple: #e9d3ff; /* Lighter purple, ideal for text on dark backgrounds to ensure readability */
+            --accent-blue: #00b0ff; /* Another bright blue for strong emphasis and interactive elements */
+            --text-dark-mode: var(--light-purple); /* Default text color in dark mode */
+            --shadow-dark-mode-1: rgba(0, 0, 0, 0.6); /* Deeper primary shadow */
+            --shadow-dark-2: rgba(74, 0, 114, 0.4); /* Secondary shadow with a purple tint */
+
+            /* Light Mode Variables: Clean, softer colors for a brighter interface */
+            --light-bg: #f0f2f5; /* Soft grey background for light mode */
+            --light-text: #2c3e50; /* Darker text for better contrast on light backgrounds */
+            --light-accent: #673ab7; /* Muted purple accent for light mode elements */
+            --light-border: #d7ccc8; /* Light grey-purple for borders/separators in light mode */
+            --light-card: #ffffff; /* Pure white for card backgrounds in light mode */
+            --shadow-light-mode-1: rgba(0, 0, 0, 0.15); /* Primary shadow for light mode */
+            --shadow-light-mode-2: rgba(94, 53, 177, 0.1); /* Secondary shadow with a subtle purple tint */
+        }
+
+        /* Base body styling: sets font, background, and default text color based on theme */
+          body {
+        overflow-x: hidden;
+        overflow-y: transparent; 
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark-space) 0%, #3a0e69 100%); /* Elegant gradient background */
+            color: var(--text-dark-mode); /* Default to dark mode text color */
+            transition: background 0.5s ease, color 0.3s ease; /* Smooth transition for theme changes */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers content horizontally */
+            min-height: 100vh; /* Ensures body takes at least full viewport height */
+            padding: 20px;
+            box-sizing: border-box; /* Includes padding in element's total width and height */
+            line-height: 1.7; /* Optimized line height for enhanced readability */
+            font-size: 1.05rem; /* Slightly larger base font size for premium feel */
+        }
+
+        /* Light mode specific styles: overrides dark mode defaults when 'light-mode' class is applied */
+        body.light-mode {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%); /* Soft gradient for light mode */
+            color: var(--light-text);
+        }
+
+        /* Container styling: central content area with rounded corners and shadow */
+        .container {
+            background-color: var(--deep-purple); /* Container background in dark mode */
+            border-radius: 25px; /* Softer, more pronounced rounded corners */
+            padding: 30px;
+            box-shadow: 0 15px 40px var(--shadow-dark-mode-1), 0 5px 20px var(--shadow-dark-2); /* Multi-layered shadow for depth */
+            width: 100%; /* Ensures responsiveness across screen sizes */
+            max-width: 960px; /* Increased max-width for a more expansive feel */
+            transition: background-color 0.4s ease, box-shadow 0.4s ease; /* Smooth transition for theme changes */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle light border for definition */
+            backdrop-filter: blur(5px); /* Adds a subtle frosted glass effect */
+            -webkit-backdrop-filter: blur(5px); /* Safari support */
+        }
+
+        /* Light mode container styles */
+        body.light-mode .container {
+            background-color: var(--light-card); /* Light mode container background */
+            box-shadow: 0 15px 40px var(--shadow-light-mode-1), 0 5px 20px var(--shadow-light-mode-2); /* Light mode multi-layered shadow */
+            border: 1px solid rgba(0, 0, 0, 0.05); /* Subtle dark border for light mode */
+        }
+
+        /* Top controls wrapper for theme toggle and Google Translate, aligned to the right */
+        .top-controls-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; /* Aligns items to the right */
+            width: 100%;
+            max-width: 960px; /* Match container max-width */
+            margin-bottom: 25px;
+            padding: 0 15px; /* Adjusted padding */
+            gap: 20px; /* Increased space between elements */
+            flex-wrap: wrap; /* Allows items to wrap onto the next line on smaller screens */
+        }
+        
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark-mode);
+            font-size: 0.95rem; /* Slightly larger text for switch label */
+            font-weight: 500;
+        }
+
+        /* Light mode theme switch wrapper text color */
+        body.light-mode .theme-switch-wrapper {
+            color: var(--light-text);
+        }
+
+        /* Hidden checkbox styling for the theme switch */
+        .theme-switch {
+            display: inline-block;
+            height: 38px; /* Slightly larger switch */
+            position: relative;
+            width: 68px; /* Slightly wider switch */
+        }
+
+        .theme-switch input {
+            display: none; /* Hides the actual checkbox input */
+        }
+
+        /* Slider track for the theme toggle */
+        .slider {
+            background-color: #888; /* Darker neutral background for the toggle track */
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s; /* Smooth transition for slider movement */
+            border-radius: 38px; /* Makes the track rounded */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); /* Inner shadow for depth */
+        }
+
+        /* Slider handle for the theme toggle */
+        .slider:before {
+            background-color: #fff; /* White handle */
+            bottom: 4px;
+            content: ""; /* Required for :before pseudo-element */
+            height: 30px; /* Larger handle */
+            left: 4px;
+            position: absolute;
+            transition: .4s; /* Smooth transition for handle movement */
+            width: 30px; /* Larger handle */
+            border-radius: 50%; /* Makes the handle circular */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); /* Handle shadow */
+        }
+
+        /* Styles when the theme switch is checked (activates light mode) */
+        input:checked + .slider {
+            background-color: var(--electric-blue); /* Blue track when checked */
+            box-shadow: inset 0 2px 5px rgba(0, 132, 255, 0.5); /* Inner shadow for checked state */
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px); /* Moves the handle to the right when checked */
+            box-shadow: 0 2px 8px var(--shadow-dark-2); /* Handle shadow for checked state */
+        }
+
+        /* Language Selector Button that opens the modal */
+        #select-language-btn {
+            background-color: var(--electric-blue);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 132, 255, 0.3);
+            border: none;
+            flex-shrink: 0;
+        }
+        #select-language-btn:hover {
+            background-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 132, 255, 0.5);
+        }
+        body.light-mode #select-language-btn {
+            background-color: var(--light-accent);
+            box-shadow: 0 2px 5px rgba(103, 58, 183, 0.2);
+        }
+        body.light-mode #select-language-btn:hover {
+            background-color: #6200EE;
+            box-shadow: 0 4px 8px rgba(103, 58, 183, 0.4);
+        }
+
+
+        /* Custom input for language selection */
+        .custom-language-input {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .custom-language-input input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--cosmic-purple);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-dark-mode);
+            font-size: 0.9rem;
+            flex-grow: 1;
+            outline: none;
+        }
+        body.light-mode .custom-language-input input {
+            background-color: var(--light-card);
+            border: 1px solid var(--light-border);
+            color: var(--light-text);
+        }
+        .custom-language-input button {
+            background-color: #4CAF50; /* Green for save */
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .custom-language-input button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        /* Next Chapter Link Styling */
+        #next-chapter-link {
+            background: linear-gradient(90deg, var(--cosmic-purple) 0%, var(--electric-blue) 100%); /* Gradient button */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px; /* More rounded */
+            text-decoration: none;
+            font-weight: 700; /* Bolder text */
+            transition: all 0.3s ease; /* Smooth transition for all properties */
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4); /* Deeper shadow */
+            display: none; /* Hidden by default, shown when chapter is complete */
+            letter-spacing: 0.05em; /* Slight letter spacing for premium look */
+            text-transform: uppercase; /* Uppercase text */
+        }
+
+        /* Light mode next chapter link styles */
+        body.light-mode #next-chapter-link {
+            background: linear-gradient(90deg, var(--light-accent) 0%, #6200EE 100%); /* Light mode gradient */
+            box-shadow: 0 5px 15px rgba(94, 53, 177, 0.3);
+        }
+
+        /* Hover effect for next chapter link */
+        #next-chapter-link:hover {
+            transform: translateY(-3px) scale(1.02); /* More pronounced lift and slight scale */
+            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.6); /* Even deeper shadow on hover */
+            background-position: right center; /* Animate gradient direction */
+            background-size: 200% auto; /* For gradient animation */
+        }
+
+        /* YouTube Player and External Game Container Styling */
+        #youtube-player {
+            position: relative; /* Needed for positioning the overlay */
+            width: 100%;
+            aspect-ratio: 16 / 9; /* Maintains 16:9 aspect ratio for videos */
+            border-radius: 20px; /* More rounded corners */
+            overflow: hidden; /* Clips content outside the rounded corners */
+            border: 3px solid var(--accent-blue); /* Thicker, more prominent border */
+            box-shadow: 0 0 25px rgba(0, 176, 255, 0.8), 0 0 50px rgba(0, 176, 255, 0.4); /* Double glow effect */
+            transition: all 0.4s ease; /* Smooth transition for player focus */
+        }
+        #youtube-player:focus-within, #external-game-iframe:focus-within {
+            transform: scale(1.01); /* Slight zoom on focus */
+            box-shadow: 0 0 30px rgba(0, 176, 255, 1), 0 0 60px rgba(0, 176, 255, 0.6); /* More intense glow on focus */
+        }
+
+        /* Overlay to disable interaction with YouTube player controls */
+        #youtube-player-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0); /* Transparent, but captures clicks */
+            z-index: 10; /* Above the iframe */
+            display: none; /* Hidden by default */
+            cursor: not-allowed; /* Indicate that it's not interactive */
+        }
+        #youtube-player-overlay.active-overlay {
+            display: block; /* Show when questions are active */
+        }
+
+        #external-game-container {
+            margin-top: 30px; /* More spacing */
+            text-align: center;
+            background-color: var(--deep-purple);
+            padding: 30px; /* More padding */
+            border-radius: 20px;
+            box-shadow: 0 8px 25px var(--shadow-dark-mode-1); /* Deeper shadow */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+        /* Light mode external game container styles */
+        body.light-mode #external-game-container {
+            background-color: var(--light-card);
+            box-shadow: 0 8px 25px var(--shadow-light-mode-1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        /* Styling for the "Mark Game as Complete" button */
+        #mark-game-complete-btn {
+            background: linear-gradient(90deg, var(--accent-blue) 0%, #00d4ff 100%); /* Gradient button */
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 176, 255, 0.5);
+            margin-top: 25px; /* More spacing */
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        /* Hover effect for the game complete button */
+        #mark-game-complete-btn:hover {
+            background-position: right center;
+            background-size: 200% auto;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 176, 255, 0.7);
+        }
+        /* Disabled state for the game complete button */
+        #mark-game-complete-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Loading spinner animation */
+        .loading-spinner {
+            border: 5px solid rgba(255,255,255,0.2);
+            border-top: 5px solid var(--electric-blue);
+            border-radius: 50%;
+            width: 50px; /* Larger spinner */
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto; /* More margin */
+            display: none; /* Hidden by default */
+            filter: drop-shadow(0 0 8px var(--electric-blue)); /* Glow effect */
+        }
+
+        /* Keyframe animation for the spinner */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Questions section styling: container for checkpoint challenges */
+        .questions-section { 
+            background-color: var(--deep-purple);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            width: 100%;
+            box-shadow: 0 10px 30px var(--shadow-dark-mode-1);
+            transition: background-color 0.4s ease, box-shadow 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+        /* Light mode questions section styles */
+        body.light-mode .questions-section {
+            background-color: var(--light-card);
+            box-shadow: 0 10px 30px var(--shadow-light-mode-1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Styles for the area containing multiple text questions */
+        .text-questions-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Increased space between individual question items */
+            margin-bottom: 30px; /* More spacing */
+            padding: 20px;
+            background-color: rgba(74, 0, 114, 0.3); /* Softer semi-transparent background */
+            border-radius: 15px; /* More rounded */
+            border: 1px solid var(--cosmic-purple); /* Defined border */
+        }
+        /* Light mode text questions area styles */
+        body.light-mode .text-questions-area {
+            background-color: var(--light-border);
+            border: 1px solid var(--light-accent);
+        }
+
+        /* Styling for individual question items */
+        .text-question-item {
+            padding: 15px; /* More padding */
+            background-color: rgba(74, 0, 114, 0.5); /* Slightly darker semi-transparent background */
+            border-radius: 12px; /* More rounded */
+            color: var(--text-dark-mode);
+            transition: background-color 0.3s ease; /* Smooth transition for feedback */
+            border: 1px solid rgba(255, 255, 255, 0.05); /* Very subtle internal border */
+        }
+        /* Light mode text question item styles */
+        body.light-mode .text-question-item {
+            background-color: var(--light-card);
+            color: var(--light-text);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+        .text-question-item p {
+            font-weight: 600;
+            margin-bottom: 10px; /* More space */
+            font-size: 1.05rem;
+        }
+        .text-question-options label {
+            display: flex; /* Use flex for better alignment of radio and text */
+            align-items: center;
+            margin-bottom: 8px; /* More space between options */
+            cursor: pointer;
+            padding: 5px 0; /* Vertical padding for click area */
+            transition: color 0.2s ease;
+        }
+        .text-question-options label:hover {
+            color: var(--electric-blue); /* Highlight text on hover */
+        }
+        body.light-mode .text-question-options label:hover {
+            color: var(--light-accent);
+        }
+        .text-question-options input[type="radio"] {
+            margin-right: 12px; /* More space from radio button */
+            accent-color: var(--accent-blue); /* Colors the radio button itself */
+            transform: scale(1.2); /* Slightly larger radio buttons for easier tapping */
+            transition: transform 0.2s ease;
+        }
+        .text-question-options input[type="radio"]:checked {
+            transform: scale(1.3); /* Slightly larger when checked */
+        }
+
+        /* Styling for the "Submit Challenge" button */
+        #submit-challenge-btn {
+            background: linear-gradient(90deg, var(--electric-blue) 0%, #00C6FF 100%); /* Gradient button */
+            color: white;
+            padding: 15px 35px; /* Larger padding */
+            border: none;
+            border-radius: 12px; /* More rounded */
+            font-size: 1.15rem; /* Larger font */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4); /* Deeper shadow */
+            margin-top: 25px; /* More space */
+            font-weight: 700; /* Bolder text */
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        /* Hover effect for submit button */
+        #submit-challenge-btn:hover {
+            background-position: right center;
+            background-size: 200% auto;
+            transform: translateY(-4px) scale(1.03); /* More pronounced lift and scale */
+            box-shadow: 0 12px 25px rgba(0, 123, 255, 0.6); /* Even deeper shadow on hover */
+        }
+        /* Disabled state for submit button */
+        #submit-challenge-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Modern Message Box Styles: used for custom alerts instead of browser's alert() */
+        .message-box {
+            position: fixed; /* Fixed position relative to the viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Darker overlay */
+            display: flex; /* Centers content using flexbox */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* Ensures it's on top of all other content */
+            backdrop-filter: blur(8px); /* More pronounced blur effect */
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0; /* Start hidden for animation */
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .message-box.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Content area of the message box */
+        .message-box-content {
+            background-color: var(--deep-purple);
+            color: var(--text-dark-mode);
+            padding: 40px; /* More padding */
+            border-radius: 20px; /* More rounded */
+            box-shadow: 0 20px 50px var(--shadow-dark-mode-1), 0 5px 20px var(--shadow-dark-2); /* Deeper, multi-layered shadow */
+            max-width: 450px; /* Slightly wider */
+            text-align: center;
+            transform: scale(0.8); /* Starts smaller for pop-in */
+            animation: popIn 0.4s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Smoother pop-in animation */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Defined border */
+            opacity: 0; /* Start hidden for animation */
+        }
+
+        /* Light mode message box content styles */
+        body.light-mode .message-box-content {
+            background-color: var(--light-card);
+            color: var(--light-text);
+            box-shadow: 0 20px 50px var(--shadow-light-mode-1), 0 5px 20px var(--shadow-light-mode-2);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* Keyframe animation for the pop-in effect */
+        @keyframes popIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .message-box-content p {
+            margin-bottom: 25px; /* More space */
+            font-size: 1.2rem; /* Larger font for message */
+            font-weight: 500;
+        }
+
+        /* OK button inside the message box */
+        .message-box-content button {
+            background: linear-gradient(90deg, var(--accent-blue) 0%, #00e0ff 100%); /* Gradient button */
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 176, 255, 0.5);
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        /* Hover effect for message box button */
+        .message-box-content button:hover {
+            background-position: right center;
+            background-size: 200% auto;
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 8px 20px rgba(0, 176, 255, 0.7);
+        }
+
+        /* Custom input inside message box for language */
+        .message-box-content input[type="text"] {
+            width: calc(100% - 20px); /* Adjust width considering padding */
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--cosmic-purple);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-dark-mode);
+            font-size: 1rem;
+            outline: none;
+        }
+        body.light-mode .message-box-content input[type="text"] {
+            background-color: var(--light-card);
+            border: 1px solid var(--light-border);
+            color: var(--light-text);
+        }
+        .message-box-content .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .message-box-content .language-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .message-box-content .language-options button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: var(--electric-blue);
+            color: white;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 132, 255, 0.2);
+        }
+        .message-box-content .language-options button:hover {
+            background-color: var(--accent-blue);
+            transform: translateY(-1px);
+        }
+        .message-box-content .language-options button.active {
+            background-color: var(--cosmic-purple);
+            box-shadow: 0 0 0 2px var(--electric-blue);
+        }
+
+
+        /* Styling for the "Get Hint" button */
+        .hint-button {
+            background: linear-gradient(90deg, #6c5ce7 0%, #a29bfe 100%); /* Purple-blue gradient */
+            color: white;
+            padding: 8px 16px; /* Slightly larger padding */
+            border-radius: 8px; /* More rounded */
+            font-size: 0.85rem; /* Slightly larger font */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(108, 92, 231, 0.4);
+            margin-top: 12px; /* More space from options */
+            display: inline-block; 
+            margin-right: 15px; /* More space between buttons */
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+        /* Hover effect for hint button */
+        .hint-button:hover {
+            background-position: right center;
+            background-size: 200% auto;
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 5px 12px rgba(108, 92, 231, 0.6);
+        }
+
+        /* Styling for the hint display area */
+        .hint-display {
+            background-color: rgba(0, 176, 255, 0.15); /* Slightly more opaque background for hint */
+            border-left: 5px solid var(--accent-blue); /* Thicker left border */
+            padding: 12px; /* More padding */
+            margin-top: 15px; /* More margin */
+            border-radius: 8px; /* More rounded */
+            color: var(--text-dark-mode); 
+            font-size: 0.95rem; /* Slightly larger font */
+            font-style: italic;
+            display: none; /* Hidden by default, shown when hint is generated */
+            line-height: 1.5;
+            animation: fadeIn 0.5s ease-out; /* Fade in animation */
+        }
+        /* Light mode hint display styles */
+        body.light-mode .hint-display {
+            background-color: rgba(94, 53, 177, 0.1);
+            border-left-color: var(--light-accent);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Styles for generated visual aids (images) */
+        .question-visual-aid {
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 15px; 
+            margin-top: 20px; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); 
+            border: 2px solid var(--cosmic-purple); 
+            display: block; 
+            margin-left: auto; 
+            margin-right: auto; 
+            transition: all 0.3s ease;
+        }
+        body.light-mode .question-visual-aid {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border: 2px solid var(--light-accent);
+        }
+        .question-visual-aid:hover {
+            transform: scale(1.01);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Animations for Victory and Game Over */
+        .victory-animation, .gameover-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            flex-direction: column;
+            color: white;
+            font-size: 3rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255,255,255,0.7);
+        }
+
+        .victory-animation.active, .gameover-animation.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .victory-animation span, .gameover-animation span {
+            display: block;
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Victory Specifics */
+        .victory-animation {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%); /* Green gradient */
+            background-image: url('https://assets.onecompiler.app/438cc35sk/43mh39979/silhouette-man-holding-trophy-stadium-with-cheering-crowd_259464-803%20(1).png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .victory-animation h2 {
+          color: #8B7500;
+          -webkit-text-stroke: 1px black;
+          text-shadow:
+            -1px -1px 0 #000,  
+             1px -1px 0 #000,
+            -1px  1px 0 #000,
+             1px  1px 0 #000;
+        }
+
+
+        .victory-animation .checkmark {
+            font-size: 5rem;
+            animation: fadeInScale 1s ease-out forwards;
+            animation-delay: 0.3s;
+            display: block;
+            margin-bottom: 20px;
+            color: #8B7500;
+            -webkit-text-stroke: 1px black;
+            text-shadow:
+              -1px -1px 0 #000,  
+               1px -1px 0 #000,
+              -1px  1px 0 #000,
+               1px  1px 0 #000;
+        }
+
+        /* Game Over Specifics */
+        .gameover-animation {
+            background: linear-gradient(135deg, #f44336 0%, #e91e63 100%); /* Red gradient */
+            background-image: url('https://images.hdqwalls.com/wallpapers/red-dead-redemption-ii-rs.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .gameover-animation h2 {
+            animation: shake 0.5s ease-in-out forwards;
+            color: white;
+        }
+        .gameover-animation .crossmark {
+            font-size: 5rem;
+            animation: fadeInRotate 1s ease-out forwards;
+            animation-delay: 0.3s;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        /* Keyframe animations for victory/gameover */
+        @keyframes bounceIn {
+            0% { transform: scale(0.1); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        @keyframes fadeInRotate {
+            0% { opacity: 0; transform: scale(0.5) rotate(-90deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+              body {
+        overflow-x: hidden;
+        overflow-y: transparent; 
+                padding: 10px;
+                font-size: 0.95rem;
+            }
+
+            .container {
+                padding: 20px;
+                border-radius: 15px;
+            }
+
+            .top-controls-wrapper {
+                flex-direction: column; /* Stack items vertically */
+                align-items: flex-end; /* Align to the right side */
+                gap: 15px;
+                padding: 0 10px;
+                margin-bottom: 15px;
+            }
+
+            #select-language-btn {
+                width: auto; /* Allow button to size content */
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+
+            .theme-switch-wrapper {
+                justify-content: flex-end; /* Align switch to the right */
+                width: 100%;
+            }
+
+            .message-box-content {
+                padding: 25px;
+                max-width: 90%; /* Take more width on small screens */
+            }
+
+            .message-box-content p {
+                font-size: 1.1rem;
+                margin-bottom: 20px;
+            }
+
+            .message-box-content button {
+                padding: 10px 25px;
+                font-size: 1rem;
+            }
+
+            .message-box-content .button-group {
+                flex-direction: column; /* Stack buttons vertically */
+                gap: 10px;
+            }
+
+            .text-questions-area {
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .text-question-item {
+                padding: 12px;
+            }
+
+            .text-question-item p {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .text-question-options label {
+                font-size: 0.95rem;
+            }
+
+            #submit-challenge-btn {
+                padding: 12px 30px;
+                font-size: 1.05rem;
+            }
+
+            .hint-button {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+
+            .hint-display {
+                padding: 10px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-controls-wrapper">
+        <a id="next-chapter-link" href="math1.html">Go to Next Chapter</a>
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+            <span class="ml-2">Dark/Light Mode</span>
+        </div>
+        <!-- Language Selection Button to open the modal -->
+        <button id="select-language-btn">Select Language</button>
+    </div>
+
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center mb-6">Chapter Explorer</h1>
+        <div id="youtube-player">
+            <!-- YouTube Iframe will be injected here by the API -->
+            <div id="youtube-player-overlay"></div> <!-- Overlay to block clicks -->
+        </div>
+        <div id="video-info" class="mt-4 text-center text-sm">
+            <p><strong>Current Chapter:</strong> <span id="chapter-display"></span></p>
+            <p><strong>Current Score:</strong> <span id="score-display">0</span></p>
+            <p><strong>Level Progress:</strong> <span id="level-display">0</span></p>
+            <p><strong>User ID:</strong> <span id="user-id-display">Loading...</span></p>
+        </div>
+        <div class="loading-spinner" id="loading-spinner"></div>
+
+        <div id="questions-section" class="questions-section mt-6 hidden">
+            <h2 class="text-2xl font-bold mb-4 text-center">Checkpoint Challenge</h2>
+            
+            <!-- Area where individual checkpoint questions will be dynamically loaded -->
+            <div id="text-questions-area" class="text-questions-area"></div>
+
+            <button id="submit-challenge-btn" disabled>Submit Challenge</button>
+        </div>
+
+        <!-- Final Game Challenge Section: displays an external game in an iframe -->
+        <!-- This section is only shown if the user explicitly needs to play the game (e.g., didn't meet 80% score) -->
+        <div id="external-game-container" class="hidden">
+            <h2 class="text-2xl font-bold mb-4 text-center">Final Game Challenge!</h2>
+            <p>Interact with the game below to complete this chapter.</p>
+            <iframe id="external-game-iframe" frameborder="0" allowfullscreen></iframe>
+            <button id="mark-game-complete-btn">Mark Game as Complete</button>
+        </div>
+    </div>
+
+    <!-- Custom Message Box HTML: Replaces standard alert/confirm dialogs -->
+    <div id="message-box" class="message-box">
+        <div class="message-box-content">
+            <p id="message-text"></p>
+            <div id="message-box-input-area" style="display: none;">
+                <input type="text" id="message-input" placeholder="Enter language name (e.g., French)">
+                <div class="button-group">
+                    <button id="message-ok-btn">OK</button>
+                    <button id="message-cancel-btn">Cancel</button>
+                </div>
+            </div>
+            <!-- Language options will be dynamically inserted here -->
+            <div id="language-options-container" class="language-options" style="display: none;"></div>
+            <button id="message-ok-simple-btn">OK</button>
+        </div>
+    </div>
+
+    <!-- Victory Animation Overlay -->
+    <div id="victory-animation" class="victory-animation">
+        <div class="checkmark">✅</div>
+        <h2>VICTORY!</h2>
+        <span>Chapter Completed Successfully!</span>
+    </div>
+
+    <!-- Game Over Animation Overlay -->
+    <div id="gameover-animation" class="gameover-animation">
+        <div class="crossmark">❌</div>
+        <h2>GAME OVER</h2>
+        <span>Keep Trying!</span>
+    </div>
+
+    <script type="module">
+        // --- API Keys & External Links Configuration ---
+        const YOUTUBE_API_KEYS = [
+            'AIzaSyBNGX-ctd1bHFfKR1chi_xx6it7gaTbZOM',
+            'AIzaSyC93w_UsnvHB1cY-QJFOIpVUVef0Kr9thU',
+            'AIzaSyAx9tVUn94XOf_z0P8SgK4ONGvtYTnG5CQ',
+            'AIzaSyCOXQjAi6p4AxAsmwRfiuAGyksC-GW7h0Q',
+            'AIzaSyCBpRZt8Ixw-9lOCvpPHRNS0z2IY942sZQ'
+        ];
+        let currentYoutubeApiKeyIndex = 0; 
+        
+        const GEMINI_API_KEYS = [
+            'AIzaSyD3N22MpwPfObp7SmuCzdAsdXduij1CAbg',
+            'AIzaSyBrLFORMIa1Q73eot8KveqhFgHqpglI6YA',
+            'AIzaSyDSO9QllEwb6GFzxmqLSvMEsbemoCHmSkc',
+            'AIzaSyDSxBCZWuN4EkiKOAwHUNNHhsGc3U6s_hM',
+            'AIzaSyBikw4QJ_U2GGFeGHiC9kX3K_BR677z74s'
+        ];
+        let currentGeminiApiKeyIndex = 0;
+
+        const GEMINI_MODEL = "gemini-2.0-flash";
+        const IMAGEN_API_MODEL = "imagen-3.0-generate-002";
+
+
+        const USER_PROVIDED_VIDEO_LINK = 'https://www.youtube.com/watch?v=8cR_1Qi-tP4&ab_channel=PreschoolPrepCompany'; 
+        const NEXT_CHAPTER_URL = 'math1.html'; 
+        const EXTERNAL_GAME_URL = 'https://placehold.co/600x400/000000/FFFFFF?text=YOUR_GAME_URL_HERE'; 
+        const DEFAULT_COORDS = { latitude: 21.4225, longitude: 39.8262, city: 'Makkah', country: 'Saudi Arabia', countryCode: 'SA' };
+        const CHAPTER_NAME = 'Counting Numbers'; 
+
+        // --- DOM Element References ---
+        const body = document.body;
+        const themeToggle = document.getElementById('theme-toggle');
+        const nextChapterLink = document.getElementById('next-chapter-link');
+        const youtubePlayerDiv = document.getElementById('youtube-player');
+        const youtubePlayerOverlay = document.getElementById('youtube-player-overlay');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const questionsSection = document.getElementById('questions-section'); 
+        const chapterDisplay = document.getElementById('chapter-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const levelDisplay = document.getElementById('level-display');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const videoInfo = document.getElementById('video-info');
+
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const messageInputArea = document.getElementById('message-box-input-area');
+        const messageInput = document.getElementById('message-input');
+        const messageOkBtn = document.getElementById('message-ok-btn'); // For input box
+        const messageCancelBtn = document.getElementById('message-cancel-btn'); // For input box
+        const messageOkSimpleBtn = document.getElementById('message-ok-simple-btn'); // For simple alerts
+        const languageOptionsContainer = document.getElementById('language-options-container'); // New element for language buttons
+
+        const textQuestionsArea = document.getElementById('text-questions-area');
+        const submitChallengeBtn = document.getElementById('submit-challenge-btn'); 
+
+        const externalGameContainer = document.getElementById('external-game-container');
+        const externalGameIframe = document.getElementById('external-game-iframe');
+        const markGameCompleteBtn = document.getElementById('mark-game-complete-btn');
+
+        const victoryAnimation = document.getElementById('victory-animation');
+        const gameoverAnimation = document.getElementById('gameover-animation');
+
+        // Language selection elements (now just the single button)
+        const selectLanguageBtn = document.getElementById('select-language-btn');
+
+        // --- Global State Variables ---
+        let player;
+        let currentVideoId = '';
+        let currentVideoDuration = 0;
+        let currentVideoTitle = '';
+        let currentVideoDescription = '';
+        let checkpoints = [];
+        let currentCheckpointIndex = -1;
+        let lastPlayedTime = 0;
+        let lastCheckpointTime = 0;
+        let isFinalAssessmentActive = false;
+
+        let currentUserId = localStorage.getItem('chapter_app_userId') || crypto.randomUUID(); 
+        if (!localStorage.getItem('chapter_app_userId')) {
+            localStorage.setItem('chapter_app_userId', currentUserId);
+        }
+        userIdDisplay.textContent = currentUserId.substring(0, 8) + '...'; 
+
+        window.correctQuestionsInCurrentChapter = 0;
+        window.totalQuestionsAttemptedInCurrentChapter = 0;
+        window.needsQuestionRegeneration = false; 
+
+        const CHAPTER_PASS_SCORE_PERCENTAGE = 80;
+        const CHECKPOINT_PASS_SCORE_PERCENTAGE = 80;
+
+        // Initialize userLanguagePreference globally, it will be used immediately for prompts.
+        let userLanguagePreference = localStorage.getItem('userLanguagePreference') || 'English'; 
+        console.log('Global initial userLanguagePreference loaded:', userLanguagePreference);
+
+
+        // --- Game Data Management Functions (using Local Storage for persistence) ---
+        function loadGameData() {
+            const isChapterCompleted = localStorage.getItem(`chapterCompleted_${CHAPTER_NAME}_${currentUserId}`);
+            if (isChapterCompleted === 'true') {
+                console.log(`Chapter "${CHAPTER_NAME}" is already completed! Auto-redirecting to the next chapter.`);
+                const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+                window.location.href = currentPath + NEXT_CHAPTER_URL;
+                return;
+            }
+
+            const storedScores = localStorage.getItem('scoreofbasikno');
+            let currentTotalScore = 0;
+            if (storedScores) {
+                try {
+                    const parsedScores = JSON.parse(storedScores);
+                    if (Array.isArray(parsedScores)) {
+                        currentTotalScore = parsedScores.reduce((sum, item) => sum + (item.score || 0), 0);
+                    } else {
+                        console.error("Stored score data is not an array, resetting.");
+                        localStorage.setItem('scoreofbasikno', '[]');
+                    }
+                } catch (e) {
+                    console.error("Error parsing score data from localStorage, resetting.", e);
+                    localStorage.setItem('scoreofbasikno', '[]');
+                }
+            } else {
+                localStorage.setItem('scoreofbasikno', '[]');
+            }
+            scoreDisplay.textContent = currentTotalScore;
+
+            let currentLevel = parseInt(localStorage.getItem('levelofbasikno')) || 0;
+            if (isNaN(currentLevel)) { 
+                currentLevel = 0;
+                localStorage.setItem('levelofbasikno', '0');
+            }
+            levelDisplay.textContent = currentLevel;
+
+            const chapterProgressKey = `chapterProgress_${CHAPTER_NAME}_${currentUserId}`;
+            const savedChapterProgress = JSON.parse(localStorage.getItem(chapterProgressKey)) || {};
+
+            currentCheckpointIndex = savedChapterProgress.currentCheckpointIndex !== undefined ? savedChapterProgress.currentCheckpointIndex : -1;
+            lastCheckpointTime = savedChapterProgress.lastCheckpointTime !== undefined ? savedChapterProgress.lastCheckpointTime : 0;
+            window.correctQuestionsInCurrentChapter = savedChapterProgress.correctQuestions || 0;
+            window.totalQuestionsAttemptedInCurrentChapter = savedChapterProgress.totalQuestions || 0;
+            
+            console.log('Game data loaded from Local Storage:', { 
+                score: scoreDisplay.textContent, 
+                level: levelDisplay.textContent, 
+                savedChapterProgress, 
+                correctQuestionsInCurrentChapter: window.correctQuestionsInCurrentChapter, 
+                totalQuestionsAttemptedInCurrentChapter: window.totalQuestionsAttemptedInCurrentChapter 
+            });
+        }
+
+        function saveGameData() {
+            const chapterProgressKey = `chapterProgress_${CHAPTER_NAME}_${currentUserId}`;
+            const progressData = {
+                currentCheckpointIndex: currentCheckpointIndex,
+                lastCheckpointTime: lastCheckpointTime,
+                correctQuestions: window.correctQuestionsInCurrentChapter,
+                totalQuestions: window.totalQuestionsAttemptedInCurrentChapter
+            };
+            localStorage.setItem(chapterProgressKey, JSON.stringify(progressData));
+            console.log('Game progress saved to Local Storage:', progressData);
+        }
+
+        function updateScore(pointsToAdd, type = 'question') {
+            let scoresArray = [];
+            const storedScores = localStorage.getItem('scoreofbasikno');
+            if (storedScores) {
+                try {
+                    scoresArray = JSON.parse(storedScores);
+                    if (!Array.isArray(scoresArray)) scoresArray = [];
+                } catch (e) {
+                    console.error("Error parsing score data from localStorage for update, starting fresh.", e);
+                    scoresArray = [];
+                }
+            }
+            
+            scoresArray.push({
+                subject: CHAPTER_NAME,
+                score: pointsToAdd,
+                type: type, 
+                date: new Date().toISOString()
+            });
+
+            localStorage.setItem('scoreofbasikno', JSON.stringify(scoresArray));
+
+            const totalScore = scoresArray.reduce((sum, item) => sum + (item.score || 0), 0);
+            scoreDisplay.textContent = totalScore;
+            console.log('Score updated:', totalScore);
+        }
+
+        function updateLevel(levelsToAdd) {
+            let currentLevel = parseInt(localStorage.getItem('levelofbasikno')) || 0;
+            currentLevel += levelsToAdd;
+            localStorage.setItem('levelofbasikno', currentLevel.toString());
+            levelDisplay.textContent = currentLevel;
+            console.log('Level upgraded to:', currentLevel);
+        }
+
+        function getChapterCompletionPercentage() {
+            if (window.totalQuestionsAttemptedInCurrentChapter === 0) return 0;
+            return (window.correctQuestionsInCurrentChapter / window.totalQuestionsAttemptedInCurrentChapter) * 100;
+        }
+
+        function markChapterComplete() {
+            const isChapterCompleted = localStorage.getItem(`chapterCompleted_${CHAPTER_NAME}_${currentUserId}`);
+            if (isChapterCompleted === 'true') {
+                console.log(`Chapter "${CHAPTER_NAME}" is already completed! Auto-redirecting to the next chapter.`);
+                const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+                window.location.href = currentPath + NEXT_CHAPTER_URL;
+                return;
+            }
+
+            updateScore(50, 'chapter_completion');
+            updateLevel(1);
+
+            localStorage.setItem(`chapterCompleted_${CHAPTER_NAME}_${currentUserId}`, 'true');
+
+            youtubePlayerDiv.classList.add('hidden');
+            videoInfo.classList.add('hidden');
+            questionsSection.classList.add('hidden');
+            externalGameContainer.classList.add('hidden');
+            loadingSpinner.style.display = 'none';
+
+            showVictoryAnimation('Chapter Completed Successfully!', () => {
+                console.log('Redirecting to next chapter as chapter is fully completed with A+...');
+                const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+                window.location.href = currentPath + NEXT_CHAPTER_URL;
+            });
+        }
+
+
+        // --- Custom Message Box Functions (replacing alert/confirm) ---
+        let messageBoxResolve = null;
+
+        /**
+         * Displays a simple message box to the user.
+         * @param {string} message The text message to display.
+         */
+        function showMessageBox(message) {
+            messageText.textContent = message;
+            messageInputArea.style.display = 'none'; // Hide input area
+            languageOptionsContainer.style.display = 'none'; // Hide language options
+            messageOkSimpleBtn.style.display = 'block'; // Show simple OK button
+            messageBox.classList.add('active');
+        }
+
+        /**
+         * Displays a message box with an input field for user text input.
+         * @param {string} message The prompt message.
+         * @param {string} placeholder The placeholder text for the input.
+         * @returns {Promise<string|null>} A promise that resolves with the user's input or null if canceled.
+         */
+        function showPromptBox(message, placeholder = "") {
+            return new Promise(resolve => {
+                messageBoxResolve = resolve;
+                messageText.textContent = message;
+                messageInput.value = ''; // Clear previous input
+                messageInput.placeholder = placeholder;
+                messageInputArea.style.display = 'flex'; // Show input area
+                languageOptionsContainer.style.display = 'none'; // Hide language options
+                messageOkSimpleBtn.style.display = 'none'; // Hide simple OK button
+                messageBox.classList.add('active');
+            });
+        }
+
+        /**
+         * Displays a modal with language selection buttons.
+         * @param {string} message The title/instruction message.
+         * @param {Array<Object>} languages Array of {code, name} for buttons.
+         * @returns {Promise<string|null>} A promise resolving with the selected language code or null if canceled.
+         */
+        function showLanguageSelectionModal(message, languages) {
+            return new Promise(resolve => {
+                messageBoxResolve = resolve;
+                messageText.textContent = message;
+                messageInputArea.style.display = 'none';
+                messageOkSimpleBtn.style.display = 'none';
+                languageOptionsContainer.style.display = 'flex'; // Show language options container
+                languageOptionsContainer.innerHTML = ''; // Clear previous buttons
+
+                languages.forEach(lang => {
+                    const button = document.createElement('button');
+                    button.textContent = lang.name;
+                    button.dataset.lang = lang.code;
+                    // Check if this language is currently selected (for predefined or custom)
+                    if (userLanguagePreference === lang.name || 
+                       (lang.code === 'custom' && !['বাংলা', 'English', 'हिंदी', 'اردو', '中文', 'العربية'].includes(userLanguagePreference))) {
+                        button.classList.add('active'); // Highlight active language
+                    }
+                    button.addEventListener('click', () => {
+                        if (lang.code === 'custom') {
+                            showPromptBox("Enter your preferred language:", "e.g., French, German, Japanese")
+                                .then(customLang => {
+                                    if (customLang) {
+                                        messageBoxResolve(customLang); // Resolve with custom language
+                                    } else {
+                                        messageBoxResolve(null); // Resolve with null if custom canceled
+                                    }
+                                    messageBoxResolve = null; // Clear resolve function
+                                    messageBox.classList.remove('active'); // Close modal
+                                });
+                        } else {
+                            messageBoxResolve(lang.name); // Resolve with selected language name
+                            messageBoxResolve = null; // Clear resolve function
+                            messageBox.classList.remove('active'); // Close modal
+                        }
+                    });
+                    languageOptionsContainer.appendChild(button);
+                });
+
+                // Add a "Cancel" button for the language selection modal
+                const cancelButton = document.createElement('button');
+                cancelButton.textContent = 'Cancel';
+                cancelButton.style.marginTop = '15px';
+                cancelButton.style.backgroundColor = '#d32f2f'; // Red color for cancel
+                cancelButton.addEventListener('click', () => {
+                    if (messageBoxResolve) {
+                        messageBoxResolve(null); // Resolve with null on cancel
+                        messageBoxResolve = null;
+                    }
+                    messageBox.classList.remove('active');
+                });
+                languageOptionsContainer.appendChild(cancelButton);
+
+                messageBox.classList.add('active');
+            });
+        }
+
+
+        /**
+         * Hides the message box.
+         */
+        function hideMessageBox() {
+            messageBox.classList.remove('active');
+            if (messageBoxResolve) {
+                messageBoxResolve(null); // Resolve with null if hidden without explicit action
+                messageBoxResolve = null;
+            }
+        }
+        
+        // Event listeners for custom message box buttons
+        messageOkSimpleBtn.addEventListener('click', hideMessageBox); // Simple OK button
+        messageOkBtn.addEventListener('click', () => { // OK button for input box
+            if (messageBoxResolve) {
+                messageBoxResolve(messageInput.value);
+                messageBoxResolve = null;
+            }
+            messageBox.classList.remove('active');
+        });
+        messageCancelBtn.addEventListener('click', () => { // Cancel button for input box
+            if (messageBoxResolve) {
+                messageBoxResolve(null);
+                messageBoxResolve = null;
+            }
+            messageBox.classList.remove('active');
+        });
+
+
+        function showVictoryAnimation(message, callback = () => {}) {
+            victoryAnimation.querySelector('span').textContent = message;
+            victoryAnimation.classList.add('active');
+            setTimeout(() => {
+                victoryAnimation.classList.remove('active');
+                callback();
+            }, 3000);
+        }
+
+        function showGameOverAnimation(message, callback = () => {}) {
+            gameoverAnimation.querySelector('span').textContent = message;
+            gameoverAnimation.classList.add('active');
+            setTimeout(() => {
+                gameoverAnimation.classList.remove('active');
+                callback();
+            }, 3000);
+        }
+
+
+        function getYouTubeVideoId(url) {
+            const regex = /(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        function getLanguageFromCountry(countryCode) {
+            switch (countryCode) {
+                case 'BD': return 'bn';
+                case 'SA': return 'ar';
+                case 'US': case 'GB': case 'CA': case 'AU': return 'en';
+                default: return 'en';
+            }
+        }
+
+        function loadYoutubeIframeAPI() {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+
+        let youtubeApiReadyPromiseResolve;
+        const youtubeApiReadyPromise = new Promise(resolve => {
+            youtubeApiReadyPromiseResolve = resolve;
+        });
+
+        window.onYouTubeIframeAPIReady = function() {
+            console.log("YouTube Iframe API is ready!");
+            youtubeApiReadyPromiseResolve();
+        };
+
+        function createYoutubePlayer(videoId) {
+            if (typeof YT !== 'undefined' && typeof YT.Player === 'function') {
+                if (player) {
+                    player.loadVideoById(videoId);
+                } else {
+                    player = new YT.Player('youtube-player', {
+                        videoId: videoId,
+                        playerVars: {
+                            'autoplay': 1,
+                            'controls': 1,
+                            'rel': 0,
+                            'modestbranding': 1
+                        },
+                        events: {
+                            'onReady': onPlayerReady,
+                            'onStateChange': onPlayerStateChange
+                        }
+                    });
+                }
+                currentVideoId = videoId;
+            } else {
+                console.error("YT.Player is not defined. YouTube Iframe API might not be loaded yet or failed.");
+                showMessageBox("Error: YouTube player failed to load. Please refresh the page.");
+            }
+        }
+
+        function onPlayerReady(event) {
+            console.log('YouTube player ready!');
+            currentVideoDuration = player.getDuration();
+            console.log('Video duration:', currentVideoDuration, 'seconds');
+            
+            if (lastCheckpointTime > 0) {
+                lastPlayedTime = lastCheckpointTime;
+                player.seekTo(lastPlayedTime, true);
+                showMessageBox(`Resuming chapter "${CHAPTER_NAME}" from ${formatTime(lastPlayedTime)}.`);
+            } else {
+                showMessageBox(`Starting chapter "${CHAPTER_NAME}". Enjoy!`);
+            }
+            loadingSpinner.style.display = 'none';
+            player.playVideo();
+
+            setInterval(monitorVideoTime, 1000);
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                console.log('Video ended.');
+                const chapterPercentage = getChapterCompletionPercentage();
+
+                // If chapter overall score is A+ and not already in final assessment, trigger it.
+                if (chapterPercentage >= CHAPTER_PASS_SCORE_PERCENTAGE && !isFinalAssessmentActive) {
+                    isFinalAssessmentActive = true;
+                    getFinalAssessmentQuestions(); // Trigger final assessment
+                } else if (isFinalAssessmentActive) {
+                    // This case means video ended while final assessment was active. 
+                    // This shouldn't happen if getFinalAssessmentQuestions pauses video properly.
+                    // But as a fallback, if video ends, and final assessment is active, we should re-trigger it.
+                    console.warn("Video ended unexpectedly during final assessment. Re-triggering.");
+                    getFinalAssessmentQuestions();
+                } else {
+                    // Video ended and overall score is NOT A+, or final assessment failed.
+                    showGameOverAnimation(`The video ended. Overall progress: ${chapterPercentage.toFixed(0)}%. Try again!`, () => {
+                        localStorage.removeItem(`chapterProgress_${CHAPTER_NAME}_${currentUserId}`);
+                        window.location.reload(); 
+                    });
+                }
+            } else if (event.data === YT.PlayerState.PLAYING) {
+                questionsSection.classList.add('hidden');
+                questionsSection.classList.remove('is-active');
+                externalGameContainer.classList.add('hidden');
+                youtubePlayerDiv.classList.remove('hidden');
+                videoInfo.classList.remove('hidden');
+                youtubePlayerOverlay.classList.remove('active-overlay');
+                if (player) player.setPlaybackRate(1);
+            }
+        }
+
+        function monitorVideoTime() {
+            // Bypass checkpoint logic if final assessment is active
+            if (!player || typeof player.getCurrentTime !== 'function' || checkpoints.length === 0 || questionsSection.classList.contains('is-active') || isFinalAssessmentActive) {
+                return;
+            }
+
+            const currentTime = player.getCurrentTime();
+            lastPlayedTime = currentTime;
+
+            let shouldTriggerCheckpoint = false;
+            let targetCheckpoint = null;
+
+            // Scenario 1: Advancing to a new, unpassed checkpoint
+            for (let i = currentCheckpointIndex + 1; i < checkpoints.length; i++) {
+                if (currentTime >= checkpoints[i].timestamp) {
+                    shouldTriggerCheckpoint = true;
+                    targetCheckpoint = checkpoints[i];
+                    currentCheckpointIndex = i;
+                    break;
+                }
+            }
+
+            // Scenario 2: Re-triggering the *current* checkpoint after a failure and video rewind
+            if (!shouldTriggerCheckpoint && currentCheckpointIndex !== -1 && window.needsQuestionRegeneration) {
+                const currentCpTimestamp = checkpoints[currentCheckpointIndex].timestamp;
+                if (currentTime >= currentCpTimestamp - 0.5 && currentTime < currentCpTimestamp + 5) { 
+                    shouldTriggerCheckpoint = true;
+                    targetCheckpoint = checkpoints[currentCheckpointIndex];
+                }
+            }
+
+            if (shouldTriggerCheckpoint) {
+                lastCheckpointTime = targetCheckpoint.timestamp;
+
+                player.pauseVideo();
+                player.setVolume(0);
+                youtubePlayerOverlay.classList.add('active-overlay');
+
+                youtubePlayerDiv.classList.add('hidden');
+                videoInfo.classList.add('hidden');
+                questionsSection.classList.remove('hidden');
+                questionsSection.classList.add('is-active');
+
+                if (window.needsQuestionRegeneration) {
+                    window.needsQuestionRegeneration = false;
+                    showMessageBox(`Review complete! Generating new questions for this checkpoint...`);
+                    regenerateCheckpointQuestions().then(() => {
+                        displayTextQuestions(checkpoints[currentCheckpointIndex].text_questions);
+                        hideMessageBox();
+                    }).catch(error => {
+                        console.error("Error regenerating questions on reattempt:", error);
+                        showMessageBox("Failed to load new questions. Please try again.");
+                        loadingSpinner.style.display = 'none';
+                    });
+                } else {
+                    showMessageBox(`Checkpoint reached at ${formatTime(lastCheckpointTime)}! Answer all questions to continue.`);
+                    displayTextQuestions(targetCheckpoint.text_questions);
+                }
+                saveGameData();
+            }
+        }
+
+        function calculateRelevance(videoTitle, videoDescription, chapterName) {
+            const chapterKeywords = chapterName.toLowerCase().split(/\s+/)
+                                        .filter(word => word.length > 2 && !['and', 'for', 'the', 'a', 'an', 'of', 'in', 'to', 'with', 'is', 'are', 'you', 'your'].includes(word));
+            let score = 0;
+            const combinedText = (videoTitle + ' ' + videoDescription).toLowerCase();
+
+            chapterKeywords.forEach(keyword => {
+                if (combinedText.includes(keyword)) {
+                    score += 2;
+                }
+            });
+
+            if (videoTitle.toLowerCase().includes(chapterName.toLowerCase())) {
+                score += 5;
+            }
+            return score;
+        }
+
+        async function fetchVideoDetailsById(videoId) {
+            if (!videoId) return null;
+            let attempts = 0;
+            while (attempts < YOUTUBE_API_KEYS.length) {
+                const apiKey = YOUTUBE_API_KEYS[currentYoutubeApiKeyIndex % YOUTUBE_API_KEYS.length];
+                const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`;
+                
+                try {
+                    console.log(`Attempting to fetch video details for ID: ${videoId} with YouTube key index: ${currentYoutubeApiKeyIndex % YOUTUBE_API_KEYS.length}`);
+                    const response = await fetch(videoDetailsUrl);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.items && data.items.length > 0) {
+                            const videoDetails = data.items[0];
+                            const durationSeconds = parseYouTubeDuration(videoDetails.contentDetails.duration);
+                            currentYoutubeApiKeyIndex = 0;
+                            return {
+                                id: videoId,
+                                snippet: videoDetails.snippet,
+                                durationSeconds: durationSeconds,
+                                relevanceScore: calculateRelevance(videoDetails.snippet.title, videoDetails.snippet.description, CHAPTER_NAME)
+                            };
+                        } else {
+                            console.warn(`Video ID ${videoId} not found or unavailable with YouTube key ${apiKey}.`);
+                        }
+                    } else if (response.status === 403 || response.status === 400) {
+                        console.warn(`YouTube API key "${apiKey}" failed with status ${response.status} for video details. Trying next key...`);
+                    } else {
+                        console.error(`Error fetching details for video ID ${videoId} with YouTube key ${apiKey}: Status ${response.status} - ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error(`Network error fetching details for video ID ${videoId} with YouTube key ${apiKey}:`, error);
+                }
+                
+                currentYoutubeApiKeyIndex++;
+                attempts++;
+            }
+            console.error("All YouTube API keys failed to fetch video details.");
+            return null;
+        }
+
+        async function fetchVideosWithDetails(query, maxResults) {
+            let videosWithCalculatedDetails = [];
+            let attempts = 0;
+            while (attempts < YOUTUBE_API_KEYS.length) {
+                const apiKey = YOUTUBE_API_KEYS[currentYoutubeApiKeyIndex % YOUTUBE_API_KEYS.length];
+                const youtubeApiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&order=viewCount&maxResults=${maxResults}&key=${apiKey}`;
+
+                try {
+                    const response = await fetch(youtubeApiUrl);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.items && data.items.length > 0) {
+                            for (const item of data.items.filter(i => i.id.kind === 'youtube#video')) {
+                                const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${item.id.videoId}&key=${apiKey}`; 
+                                const detailsResponse = await fetch(videoDetailsUrl);
+                                const detailsData = await detailsResponse.json();
+
+                                if (detailsData.items && detailsData.items.length > 0) {
+                                    const videoDetails = detailsData.items[0];
+                                    const durationSeconds = parseYouTubeDuration(videoDetails.contentDetails.duration);
+                                    const relevanceScore = calculateRelevance(videoDetails.snippet.title, videoDetails.snippet.description, CHAPTER_NAME);
+                                    videosWithCalculatedDetails.push({
+                                        id: item.id.videoId,
+                                        snippet: videoDetails.snippet,
+                                        durationSeconds: durationSeconds,
+                                        relevanceScore: relevanceScore
+                                    });
+                                }
+                            }
+                            currentYoutubeApiKeyIndex = 0;
+                            return videosWithCalculatedDetails;
+                        } else {
+                            console.warn(`No videos found for query "${query}" with YouTube key ${apiKey}.`);
+                        }
+                    } else if (response.status === 403 || response.status === 400) {
+                        console.warn(`YouTube API key "${apiKey}" failed with status ${response.status} for search. Trying next key...`);
+                    } else {
+                        console.error(`Error fetching search results with YouTube key ${apiKey}: Status ${response.status} - ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error(`Network error fetching search results with YouTube key ${apiKey}:`, error);
+                }
+                
+                currentYoutubeApiKeyIndex++;
+                attempts++;
+            }
+            console.error("All YouTube API keys failed to fetch search results.");
+            return [];
+        }
+
+
+        async function searchYouTubeVideo(chapterName, userLanguage) {
+            loadingSpinner.style.display = 'block';
+            chapterDisplay.textContent = `Searching for: ${chapterName}...`;
+
+            let bestVideo = null;
+            const minDuration30Min = 30 * 60; 
+            const minDuration15Min = 15 * 60; 
+            const minDuration5Min = 5 * 60;   
+
+            const searchAttempts = [
+                { querySuffix: `animated tutorial ${userLanguage}`, targetMinDuration: minDuration30Min, maxResults: 25, message: `Searching for animated, 30+ min videos in ${userLanguage}...` },
+                { querySuffix: `tutorial ${userLanguage}`, targetMinDuration: minDuration30Min, maxResults: 25, message: `No animated 30+ min video. Searching for non-animated, 30+ min videos in ${userLanguage}...` },
+                { querySuffix: `animated tutorial English`, targetMinDuration: minDuration30Min, maxResults: 25, message: `No 30+ min video in ${userLanguage}. Searching for animated, 30+ min videos in English...` },
+                { querySuffix: `tutorial English`, targetMinDuration: minDuration30Min, maxResults: 25, message: `No animated 30+ min video in English. Searching for non-animated, 30+ min videos in English...` },
+
+                { querySuffix: `animated tutorial ${userLanguage}`, targetMinDuration: minDuration15Min, maxResults: 25, message: `No very long video. Searching for animated, 15+ min videos in ${userLanguage}...` },
+                { querySuffix: `tutorial ${userLanguage}`, targetMinDuration: minDuration15Min, maxResults: 25, message: `No animated 15+ min video. Searching for non-animated, 15+ min videos in ${userLanguage}...` },
+                { querySuffix: `animated tutorial English`, targetMinDuration: minDuration15Min, maxResults: 25, message: `No 15+ min video in ${userLanguage}. Searching for animated, 15+ min videos in English...` },
+                { querySuffix: `tutorial English`, targetMinDuration: minDuration15Min, maxResults: 25, message: `No animated 15+ min video in English. Searching for non-animated, 15+ min videos in English...` },
+
+                { querySuffix: `tutorial ${userLanguage}`, targetMinDuration: minDuration5Min, maxResults: 50, message: `Could not find specific video. Searching for any popular 5+ min tutorial on "${chapterName}" in ${userLanguage}...` },
+                { querySuffix: `tutorial English`, targetMinDuration: minDuration5Min, maxResults: 50, message: `Final attempt: Broad search for "${chapterName}" (any relevant 5+ min video)...` }
+            ];
+
+            for (const attempt of searchAttempts) {
+                showMessageBox(attempt.message);
+                const fullQuery = `${chapterName} ${attempt.querySuffix}`.trim(); 
+                let videos = await fetchVideosWithDetails(fullQuery, attempt.maxResults);
+
+                videos = videos.filter(v => v.durationSeconds >= attempt.targetMinDuration);
+
+                videos.sort((a, b) => {
+                    if (b.relevanceScore !== a.relevanceScore) {
+                        return b.relevanceScore - a.relevanceScore; 
+                    }
+                    return b.durationSeconds - a.durationSeconds; 
+                });
+
+                if (videos.length > 0) {
+                    bestVideo = videos[0];
+                    console.log(`Found best video for attempt "${attempt.message}":`, bestVideo);
+                    break;
+                }
+            }
+            
+            if (bestVideo && bestVideo.id) {
+                createYoutubePlayer(bestVideo.id);
+                currentVideoDuration = bestVideo.durationSeconds;
+                currentVideoTitle = bestVideo.snippet.title;
+                currentVideoDescription = bestVideo.snippet.description;
+                chapterDisplay.textContent = currentVideoTitle;
+                await getCheckpoints(bestVideo.id, currentVideoTitle, bestVideo.snippet.description);
+            } else {
+                showMessageBox(`Could not find a suitable video for "${CHAPTER_NAME}" after all attempts. Please try a different chapter name or check your API key.`);
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function parseYouTubeDuration(isoDuration) {
+            const regex = /P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
+            const matches = isoDuration.match(regex);
+            if (!matches) return 0;
+
+            const days = parseInt(matches[1] || 0);
+            const hours = parseInt(matches[2] || 0);
+            const minutes = parseInt(matches[3] || 0);
+            const seconds = parseInt(matches[4] || 0);
+
+            return (days * 24 * 3600) + (hours * 3600) + (minutes * 60) + seconds;
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        /**
+         * Generates checkpoint questions with specified difficulty distribution.
+         * @param {string} videoId
+         * @param {string} videoTitle
+         * @param {string} videoDescription
+         * @param {string} difficultyDistribution - e.g., "20% easy, 60% normal, 10% hard, 10% expert"
+         * @returns {Promise<Array<Object>>}
+         */
+        async function getCheckpoints(videoId, videoTitle, videoDescription, difficultyDistribution = "20% easy, 60% normal, 10% hard, 10% expert") {
+            showMessageBox('Analyzing video content and generating questions...');
+            loadingSpinner.style.display = 'block';
+            console.log(`DEBUG: getCheckpoints - Using language preference for API call: ${userLanguagePreference}`);
+
+
+            const prompt = `
+            The following is a YouTube video about "${CHAPTER_NAME}".
+            Video Title: "${videoTitle}"
+            Video Description: "${videoDescription.slice(0, 1000)}..." (trimmed description for brevity)
+            Video Duration: ${currentVideoDuration} seconds (${formatTime(currentVideoDuration)})
+
+            Your task is to:
+            1. Identify 3-4 significant topic transitions or 'checkpoints' within the video content based on the title and description. For each checkpoint, provide a timestamp in seconds. These timestamps should be reasonably spaced throughout the video duration.
+            2. For each identified checkpoint, generate:
+                a. An array of 10-12 multiple-choice questions (MCQs) that cover the content discussed *before* that checkpoint.
+                Generate questions adhering to the following difficulty distribution: ${difficultyDistribution}.
+                All generated text, including questions, options, and any descriptive terms (e.g., easy, normal, hard, expert, etc.), must be entirely in ${userLanguagePreference}.
+                Each question should have 4 options (A, B, C, D) and clearly indicate the correct answer.
+
+            Provide the output as a JSON array of objects. Each object represents a checkpoint and contains:
+            - "timestamp": The checkpoint time in seconds (integer).
+            - "topic": A brief description of the topic covered up to this point.
+            - "text_questions": [ // Array of question objects
+                {
+                    "question_text": "Question 1 text?",
+                    "options": ["A. Option A", "B. Option B", "C. Option C", "D. Option D"],
+                    "correct_answer": "A"
+                }
+            ],
+            `;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = {
+                contents: chatHistory,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "timestamp": { "type": "NUMBER" },
+                                "topic": { "type": "STRING" },
+                                "text_questions": {
+                                    type: "ARRAY",
+                                    items: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            "question_text": { "type": "STRING" },
+                                            "options": { "type": "ARRAY", "items": { "type": "STRING" } },
+                                            "correct_answer": { "type": "STRING" }
+                                        },
+                                        "required": ["question_text", "options", "correct_answer"]
+                                    }
+                                }
+                            },
+                            "required": ["timestamp", "topic", "text_questions"]
+                        }
+                    }
+                }
+            };
+            
+            let attempts = 0;
+            while (attempts < GEMINI_API_KEYS.length) {
+                const apiKey = GEMINI_API_KEYS[currentGeminiApiKeyIndex % GEMINI_API_KEYS.length];
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Gemini API Raw Response for Checkpoints:', result);
+
+                        if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                            const jsonString = result.candidates[0].content.parts[0].text;
+                            const parsedCheckpoints = JSON.parse(jsonString);
+
+                            checkpoints = parsedCheckpoints.filter(cp => 
+                                cp.timestamp > 0 && cp.timestamp < currentVideoDuration * 0.95 
+                            ).sort((a, b) => a.timestamp - b.timestamp);
+
+                            if (checkpoints.length === 0) {
+                                console.warn('AI could not identify suitable checkpoints or generate valid questions with this key.');
+                            } else {
+                                console.log('Generated and Filtered Checkpoints with Questions:', checkpoints);
+                                hideMessageBox();
+                                currentGeminiApiKeyIndex = 0;
+                                return;
+                            }
+                        } else {
+                            console.warn('Invalid response structure from Gemini API when generating questions with this key.');
+                        }
+                    } else if (response.status === 403 || response.status === 400) {
+                        console.warn(`Gemini API key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}) failed with status ${response.status} for checkpoint generation. Trying next key...`);
+                    } else if (response.status === 503) {
+                        console.error(`Gemini API Service Unavailable (Status 503) for checkpoint generation with key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}). Trying next key...`);
+                        showMessageBox("Gemini API is temporarily unavailable. Please try again in a few moments.");
+                    } else {
+                        console.error(`Error fetching checkpoints with Gemini key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}): Status ${response.status} - ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error(`Network error fetching checkpoints with Gemini key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}):`, error);
+                }
+                currentGeminiApiKeyIndex++;
+                attempts++;
+            }
+            console.error("All Gemini API keys failed to generate checkpoints.");
+            showMessageBox(`Failed to generate questions after multiple attempts. The Gemini API might be experiencing issues. Please try again later.`);
+            checkpoints = [];
+            loadingSpinner.style.display = 'none';
+        }
+
+        async function getFinalAssessmentQuestions() {
+            showMessageBox('Video finished! Generating final assessment questions...');
+            loadingSpinner.style.display = 'block';
+            console.log(`DEBUG: getFinalAssessmentQuestions - Using language preference for API call: ${userLanguagePreference}`);
+
+            // Prompt specifically for 15 hard/expert questions from the entire video content
+            const prompt = `
+            The user has completed the video "${currentVideoTitle}" about "${CHAPTER_NAME}".
+            Video Description: "${currentVideoDescription.slice(0, 1000)}..."
+
+            Generate an array of 15 multiple-choice questions (MCQs) that cover key concepts from the *entire* video.
+            These questions should be challenging: 90% hard and 10% expert difficulty.
+            All generated text, including questions, options, and any descriptive terms (e.g., easy, normal, hard, expert, etc.), must be entirely in ${userLanguagePreference}.
+            Each question must have 4 options (A, B, C, D) and clearly indicate the correct answer.
+
+            Provide the output as a JSON array of question objects, similar to the checkpoint questions:
+            - "question_text": "Question 1 text?",
+            - "options": ["A. Option A", "B. Option B", "C. Option C", "D. Option D"],
+            - "correct_answer": "A"
+            `;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = {
+                contents: chatHistory,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "question_text": { "type": "STRING" },
+                                "options": { "type": "ARRAY", "items": { "type": "STRING" } },
+                                "correct_answer": { "type": "STRING" }
+                            },
+                            "required": ["question_text", "options", "correct_answer"]
+                        }
+                    }
+                }
+            };
+
+            let attempts = 0;
+            while (attempts < GEMINI_API_KEYS.length) {
+                const apiKey = GEMINI_API_KEYS[currentGeminiApiKeyIndex % GEMINI_API_KEYS.length];
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Gemini API Raw Response for Final Assessment:', result);
+
+                        if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                            const jsonString = result.candidates[0].content.parts[0].text;
+                            const finalQuestions = JSON.parse(jsonString);
+
+                            if (finalQuestions && Array.isArray(finalQuestions) && finalQuestions.length > 0) {
+                                // Store final questions temporarily for checking answers
+                                localStorage.setItem('tempFinalAssessmentQuestions', JSON.stringify(finalQuestions));
+                                
+                                displayTextQuestions(finalQuestions);
+                                // Remove old listener to prevent duplicate calls
+                                submitChallengeBtn.removeEventListener('click', checkCheckpointAnswers);
+                                // Add specific listener for final assessment
+                                submitChallengeBtn.addEventListener('click', checkFinalAssessmentAnswers);
+                                hideMessageBox();
+                                loadingSpinner.style.display = 'none';
+                                currentGeminiApiKeyIndex = 0;
+                                return;
+                            } else {
+                                console.warn('AI could not generate valid final assessment questions with this key.');
+                            }
+                        } else {
+                            console.warn('Invalid response structure from Gemini API for final assessment with this key.');
+                        }
+                    } else if (response.status === 403 || response.status === 400) {
+                        console.warn(`Gemini API key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}) failed with status ${response.status} for final assessment. Trying next key...`);
+                    } else if (response.status === 503) {
+                        console.error(`Gemini API Service Unavailable (Status 503) for final assessment with key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}). Trying next key...`);
+                        showMessageBox("Gemini API is temporarily unavailable for final assessment. Please try again in a few moments.");
+                    } else {
+                        console.error(`Error fetching final assessment questions with Gemini key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}): Status ${response.status} - ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error(`Network error fetching final assessment questions with Gemini key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}):`, error);
+                }
+                currentGeminiApiKeyIndex++;
+                attempts++;
+            }
+            console.error("All Gemini API keys failed to generate final assessment questions.");
+            showMessageBox(`Could not generate final assessment questions after multiple attempts. Please try reloading the chapter.`);
+            loadingSpinner.style.display = 'none';
+            // If final assessment cannot be loaded, consider what to do: reload, or auto-fail chapter.
+            // For now, reload the chapter
+            setTimeout(() => window.location.reload(), 3000);
+        }
+
+        function displayTextQuestions(textQuestionsData) {
+            questionsSection.classList.remove('hidden');
+            questionsSection.classList.add('is-active');
+            externalGameContainer.classList.add('hidden');
+            youtubePlayerDiv.classList.add('hidden');
+            videoInfo.classList.add('hidden');
+
+            textQuestionsArea.innerHTML = '';
+
+            textQuestionsData.forEach((q, qIndex) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'text-question-item'; 
+                questionDiv.innerHTML = `<p>${qIndex + 1}. ${q.question_text}</p><div class="text-question-options"></div>`;
+                const optionsContainer = questionDiv.querySelector('.text-question-options');
+
+                q.options.forEach((option, oIndex) => {
+                    const optionId = `q${qIndex}-option-${oIndex}`;
+                    const label = document.createElement('label');
+                    label.innerHTML = `<input type="radio" name="question-${qIndex}" value="${String.fromCharCode(65 + oIndex)}" id="${optionId}"> ${option}`;
+                    optionsContainer.appendChild(label);
+                });
+
+                const hintButton = document.createElement('button');
+                hintButton.className = 'hint-button';
+                hintButton.textContent = 'Get Hint ✨';
+                hintButton.dataset.questionIndex = qIndex;
+
+                const hintDisplay = document.createElement('div');
+                hintDisplay.className = 'hint-display';
+
+                questionDiv.appendChild(hintButton);
+                questionDiv.appendChild(hintDisplay);
+                
+                textQuestionsArea.appendChild(questionDiv);
+            });
+
+            submitChallengeBtn.disabled = false;
+        }
+
+        async function getHint(questionText, options) {
+            showMessageBox('Generating hint...');
+            loadingSpinner.style.display = 'block';
+            console.log(`DEBUG: getHint - Using language preference for API call: ${userLanguagePreference}`);
+
+            const prompt = `
+            The user is learning about "${CHAPTER_NAME}" through a video.
+            Here is a multiple-choice question they are currently trying to answer:
+
+            Question: "${questionText}"
+            Options: ${options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')}
+
+            Please provide a subtle hint for this question. Do NOT reveal the direct answer.
+            The hint should guide the user towards the concept or area they should focus on in the video to find the answer.
+            Keep the hint concise, ideally one or two sentences.
+            All generated text must be entirely in ${userLanguagePreference}.
+            `;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = {
+                contents: chatHistory,
+                generationConfig: {
+                    responseMimeType: "text/plain"
+                }
+            };
+            
+            let attempts = 0;
+            while (attempts < GEMINI_API_KEYS.length) {
+                const apiKey = GEMINI_API_KEYS[currentGeminiApiKeyIndex % GEMINI_API_KEYS.length];
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Gemini API Raw Response for Hint:', result);
+
+                        if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                            const hintText = result.candidates[0].content.parts[0].text;
+                            console.log('Generated hint:', hintText);
+                            hideMessageBox();
+                            currentGeminiApiKeyIndex = 0;
+                            return hintText;
+                        } else {
+                            console.warn('Invalid response structure from Gemini API when generating hint with this key.');
+                        }
+                    } else if (response.status === 403 || response.status === 400) {
+                        console.warn(`Gemini API key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}) failed with status ${response.status} for hint generation. Trying next key...`);
+                    } else if (response.status === 503) {
+                        console.error(`Gemini API Service Unavailable (Status 503) for hint generation with key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}). Trying next key...`);
+                        showMessageBox("Gemini API is temporarily unavailable for hints. Please try again in a few moments.");
+                    } else {
+                        console.error(`Error fetching hint with Gemini key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}): Status ${response.status} - ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error(`Network error fetching hint with Gemini key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}):`, error);
+                }
+                currentGeminiApiKeyIndex++;
+                attempts++;
+            }
+            console.error("All Gemini API keys failed to generate hint.");
+            showMessageBox(`Could not generate a hint after trying all API keys. The Gemini API might be experiencing issues. Please try again later.`);
+            loadingSpinner.style.display = 'none';
+            return 'Sorry, I cannot provide a hint right now.';
+        }
+
+
+        function checkCheckpointAnswers() {
+            const currentCheckpoint = checkpoints[currentCheckpointIndex];
+            if (!currentCheckpoint || !currentCheckpoint.text_questions) {
+                showMessageBox('No checkpoint questions to check.');
+                return;
+            }
+
+            let allTextQuestionsCorrectForThisCheckpoint = true;
+            let questionsAttemptedInThisCheckpoint = 0;
+            let questionsCorrectInThisCheckpoint = 0;
+
+            currentCheckpoint.text_questions.forEach((q, qIndex) => {
+                const selectedOption = document.querySelector(`input[name="question-${qIndex}"]:checked`);
+                const questionDiv = document.querySelector(`.text-question-item:nth-child(${qIndex + 1})`); 
+                
+                questionsAttemptedInThisCheckpoint++;
+
+                if (!selectedOption || selectedOption.value !== q.correct_answer) {
+                    allTextQuestionsCorrectForThisCheckpoint = false;
+                    if (questionDiv) {
+                        questionDiv.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                    }
+                } else {
+                    questionsCorrectInThisCheckpoint++;
+                    if (questionDiv) {
+                        questionDiv.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+                    }
+                    updateScore(1, 'question');
+                }
+            });
+
+            const checkpointScorePercentage = (questionsCorrectInThisCheckpoint / questionsAttemptedInThisCheckpoint) * 100;
+
+            window.correctQuestionsInCurrentChapter += questionsCorrectInThisCheckpoint;
+            window.totalQuestionsAttemptedInCurrentChapter += questionsAttemptedInThisCheckpoint;
+            saveGameData();
+
+            if (checkpointScorePercentage >= CHECKPOINT_PASS_SCORE_PERCENTAGE) {
+                updateScore(10, 'checkpoint_bonus');
+                showVictoryAnimation(`Great! You passed this checkpoint (${checkpointScorePercentage.toFixed(0)}%)!`);
+                
+                questionsSection.classList.add('hidden');
+                questionsSection.classList.remove('is-active');
+                youtubePlayerDiv.classList.remove('hidden');
+                videoInfo.classList.remove('hidden');
+                youtubePlayerOverlay.classList.remove('active-overlay');
+                
+                // Video resumes from the current checkpoint's timestamp + 1 second
+                if (player) {
+                    player.setVolume(100); 
+                    player.seekTo(currentCheckpoint.timestamp + 1, true);
+                    player.playVideo(); 
+                }
+                window.needsQuestionRegeneration = false;
+
+                // Only advance currentCheckpointIndex if not the last checkpoint to avoid out-of-bounds
+                if (currentCheckpointIndex < checkpoints.length - 1) {
+                    currentCheckpointIndex++;
+                }
+                saveGameData(); 
+            } else { // Checkpoint failed
+                window.needsQuestionRegeneration = true; 
+
+                showGameOverAnimation(`Checkpoint failed (${checkpointScorePercentage.toFixed(0)}%). Review & try again!`, () => {
+                    youtubePlayerDiv.classList.remove('hidden'); 
+                    videoInfo.classList.remove('hidden');
+                    questionsSection.classList.add('hidden'); 
+                    questionsSection.classList.remove('is-active');
+                    youtubePlayerOverlay.classList.remove('active-overlay');
+
+                    let seekToTimeForReview;
+                    if (currentCheckpointIndex === 0) {
+                        // If the first checkpoint failed, restart video from 0:00
+                        seekToTimeForReview = 0; 
+                    } else {
+                        // For subsequent checkpoints, go back to the start of the PREVIOUS checkpoint's segment
+                        seekToTimeForReview = checkpoints[currentCheckpointIndex - 1].timestamp;
+                    }
+                    
+                    if (player) {
+                        player.setVolume(100); 
+                        player.seekTo(seekToTimeForReview, true);
+                        player.playVideo(); 
+                    }
+                });
+            }
+        }
+
+        async function regenerateCheckpointQuestions() {
+            const currentCheckpoint = checkpoints[currentCheckpointIndex];
+            if (!currentCheckpoint) return;
+
+            loadingSpinner.style.display = 'block';
+            console.log(`DEBUG: regenerateCheckpointQuestions - Using language preference for API call: ${userLanguagePreference}`);
+
+            const prompt = `
+            The user failed the previous challenge for the video content around ${formatTime(currentCheckpoint.timestamp)} (topic: "${currentCheckpoint.topic}").
+            Generate a *new and different* array of 10-12 multiple-choice questions (MCQs) that cover the content discussed *before* this timestamp.
+            Ensure the questions follow this difficulty distribution: 20% easy, 60% normal, 10% hard, 10% expert.
+            All generated text, including questions, options, and any descriptive terms (e.g., easy, normal, hard, expert, etc.), must be entirely in ${userLanguagePreference}.
+            Each question should have 4 options (A, B, C, D) and clearly indicate the correct answer.
+            `;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = {
+                contents: chatHistory,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "question_text": { "type": "STRING" },
+                                "options": { "type": "ARRAY", "items": { "type": "STRING" } },
+                                "correct_answer": { "type": "STRING" }
+                            },
+                            "required": ["question_text", "options", "correct_answer"]
+                        }
+                    }
+                }
+            };
+            
+            let attempts = 0;
+            while (attempts < GEMINI_API_KEYS.length) {
+                const apiKey = GEMINI_API_KEYS[currentGeminiApiKeyIndex % GEMINI_API_KEYS.length];
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const newQuestionsData = JSON.parse(result.candidates[0].content.parts[0].text);
+
+                        if (newQuestionsData && Array.isArray(newQuestionsData) && newQuestionsData.length > 0) {
+                            currentCheckpoint.text_questions = newQuestionsData; 
+                            loadingSpinner.style.display = 'none';
+                            currentGeminiApiKeyIndex = 0;
+                            return;
+                        } else {
+                            console.warn('AI could not generate new question data for the checkpoint with this key.');
+                        }
+                    } else if (response.status === 403 || response.status === 400) {
+                        console.warn(`Gemini API key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}) failed with status ${response.status} for question regeneration. Trying next key...`);
+                    } else if (response.status === 503) {
+                        console.error(`Gemini API Service Unavailable (Status 503) for question regeneration with key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}). Trying next key...`);
+                        showMessageBox("Gemini API is temporarily unavailable for question regeneration. Please try again in a few moments.");
+                    } else {
+                        console.error(`Error regenerating challenge questions with Gemini key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}): Status ${response.status} - ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error(`Network error regenerating challenge questions with Gemini key (index ${currentGeminiApiKeyIndex % GEMINI_API_KEYS.length}):`, error);
+                }
+                currentGeminiApiKeyIndex++;
+                attempts++;
+            }
+            console.error("All Gemini API keys failed to regenerate questions.");
+            showMessageBox(`Could not generate new questions after trying all API keys. The Gemini API might be experiencing issues. Please try again later.`);
+            loadingSpinner.style.display = 'none'; 
+            questionsSection.classList.remove('hidden'); 
+            questionsSection.classList.add('is-active');
+            throw new Error("Failed to regenerate questions after all API key attempts.");
+        }
+
+        function checkFinalAssessmentAnswers() {
+            const finalQuestions = JSON.parse(localStorage.getItem('tempFinalAssessmentQuestions'));
+            if (!finalQuestions) {
+                console.error("Final assessment questions not found in local storage.");
+                showMessageBox("Error: Final assessment questions not found. Please try again.");
+                return;
+            }
+
+            let questionsAttempted = 0;
+            let questionsCorrect = 0;
+
+            finalQuestions.forEach((q, qIndex) => {
+                const selectedOption = document.querySelector(`input[name="question-${qIndex}"]:checked`);
+                const questionDiv = document.querySelector(`.text-question-item:nth-child(${qIndex + 1})`); 
+                
+                questionsAttempted++;
+                if (selectedOption && selectedOption.value === q.correct_answer) {
+                    questionsCorrect++;
+                    if (questionDiv) {
+                        questionDiv.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+                    }
+                } else {
+                    if (questionDiv) {
+                        questionDiv.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                    }
+                }
+            });
+
+            const finalScorePercentage = (questionsCorrect / questionsAttempted) * 100;
+            
+            if (finalScorePercentage >= CHAPTER_PASS_SCORE_PERCENTAGE) {
+                showVictoryAnimation(`Final Assessment Passed (${finalScorePercentage.toFixed(0)}%)! Chapter Completed!`, () => {
+                    markChapterComplete(); // This handles redirection and final score/level updates
+                    localStorage.removeItem('tempFinalAssessmentQuestions'); // Clear temp questions
+                });
+            } else {
+                isFinalAssessmentActive = false; // Reset flag
+                showGameOverAnimation(`Final Assessment Failed (${finalScorePercentage.toFixed(0)}%). Chapter will restart!`, () => {
+                    localStorage.removeItem(`chapterProgress_${CHAPTER_NAME}_${currentUserId}`); // Reset chapter progress
+                    localStorage.removeItem('tempFinalAssessmentQuestions'); // Clear temp questions
+                    window.location.reload(); // Full reload to restart chapter from 0:00
+                });
+            }
+        }
+
+
+        // --- Event Listeners ---
+        themeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                body.classList.add('light-mode');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.remove('light-mode');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        selectLanguageBtn.addEventListener('click', async () => {
+            const languages = [
+                { code: 'bn', name: 'বাংলা' },
+                { code: 'en', name: 'English' },
+                { code: 'hi', name: 'हिंदी' },
+                { code: 'ur', name: 'اردو' },
+                { code: 'zh', name: '中文' },
+                { code: 'ar', name: 'العربية' },
+                { code: 'custom', name: 'Custom' }
+            ];
+            const selectedLang = await showLanguageSelectionModal("Select a Language:", languages);
+            if (selectedLang) {
+                userLanguagePreference = selectedLang;
+                localStorage.setItem('userLanguagePreference', userLanguagePreference);
+                console.log('User language preference updated and saved:', userLanguagePreference);
+                showMessageBox(`Language set to: ${userLanguagePreference}`);
+                // No updateActiveLanguageButton needed for the top-level button anymore
+            }
+        });
+
+        // Function to set the active state on language buttons (for the modal)
+        // This function is no longer actively used to manipulate top-level UI,
+        // but the internal modal logic uses it to highlight the selected option.
+        function updateActiveLanguageButton() {
+            // This function is mainly for marking the current language in the modal when it opens.
+            // The top-level language selector button is no longer a group, so no active class needed there.
+        }
+
+
+        submitChallengeBtn.addEventListener('click', checkCheckpointAnswers);
+
+        // Explicitly attach markExternalGameAsComplete to the window object
+        window.markExternalGameAsComplete = function(correctCount, totalObjects) {
+            // Decide success based on score from the game
+            const gameCompletionPercentage = (correctCount / totalObjects) * 100;
+
+            if (gameCompletionPercentage >= CHAPTER_PASS_SCORE_PERCENTAGE) {
+                showVictoryAnimation(`Game Completed! (${gameCompletionPercentage.toFixed(0)}%) Chapter Complete!`, () => {
+                    markChapterComplete(); // This handles redirection and final score/level updates
+                });
+            } else {
+                showGameOverAnimation(`Game Failed (${gameCompletionPercentage.toFixed(0)}%). Chapter will restart!`, () => {
+                    localStorage.removeItem(`chapterProgress_${CHAPTER_NAME}_${currentUserId}`); // Reset chapter progress
+                    window.location.reload(); // Full reload to restart chapter from 0:00
+                });
+            }
+            
+            externalGameContainer.classList.add('hidden'); // Hide the game container
+            youtubePlayerOverlay.classList.remove('active-overlay'); // Enable player controls after game
+        };
+
+        // Listener for messages from the iframe (game-iframe-html)
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'gameComplete') {
+                const { correctCount, totalObjects } = event.data;
+                console.log(`Game completed in iframe. Correct: ${correctCount}, Total: ${totalObjects}`);
+                // Call the globally exposed function in the parent
+                window.markExternalGameAsComplete(correctCount, totalObjects);
+            }
+        });
+
+
+        questionsSection.addEventListener('click', async (event) => {
+            if (event.target.classList.contains('hint-button') && event.target.textContent.includes('Hint')) {
+                const button = event.target;
+                const qIndex = parseInt(button.dataset.questionIndex); 
+                let questionData;
+
+                if (isFinalAssessmentActive) {
+                    const currentFinalQuestions = JSON.parse(localStorage.getItem('tempFinalAssessmentQuestions'));
+                    questionData = currentFinalQuestions ? currentFinalQuestions[qIndex] : null;
+                } else {
+                    const currentCheckpoint = checkpoints[currentCheckpointIndex];
+                    questionData = currentCheckpoint ? currentCheckpoint.text_questions[qIndex] : null;
+                }
+
+                if (!questionData) {
+                    showMessageBox('Could not find question data for hint.');
+                    return;
+                }
+                
+                let hintDisplayElement = button.nextElementSibling;
+                while(hintDisplayElement && !hintDisplayElement.classList.contains('hint-display')) {
+                    hintDisplayElement = hintDisplayElement.nextElementSibling;
+                }
+
+                if (hintDisplayElement && hintDisplayElement.textContent.trim() !== '' && hintDisplayElement.style.display !== 'none') {
+                    showMessageBox('Hint already displayed for this question.');
+                    return;
+                }
+
+                const hint = await getHint(questionData.question_text, questionData.options);
+                if (hintDisplayElement) {
+                    hintDisplayElement.textContent = hint;
+                    hintDisplayElement.style.display = 'block';
+                }
+            } 
+        });
+
+
+        // --- Initialization on Page Load ---
+        window.onload = async function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                body.classList.add('light-mode');
+                themeToggle.checked = true;
+            }
+
+            // userLanguagePreference is already initialized globally at the top of the script
+            // and logs its initial value. So no need to re-assign here, but the log below 
+            // confirms its value right before potentially impactful calls.
+            console.log('User language preference on window.onload before API calls:', userLanguagePreference);
+
+            loadGameData();
+            
+            if (localStorage.getItem(`chapterCompleted_${CHAPTER_NAME}_${currentUserId}`) === 'true') {
+                return;
+            }
+
+            loadYoutubeIframeAPI(); 
+            await youtubeApiReadyPromise;
+
+            const userLocation = DEFAULT_COORDS; 
+            const defaultYoutubeLanguage = getLanguageFromCountry(userLocation.countryCode);
+            
+            let videoToLoad = null;
+            if (USER_PROVIDED_VIDEO_LINK) {
+                showMessageBox('Attempting to load user-provided video link...');
+                loadingSpinner.style.display = 'block';
+                const userVideoId = getYouTubeVideoId(USER_PROVIDED_VIDEO_LINK);
+                if (userVideoId) {
+                    const videoDetails = await fetchVideoDetailsById(userVideoId);
+                    if (videoDetails) {
+                        videoToLoad = videoDetails;
+                        console.log("Successfully loaded user-provided video:", videoToLoad);
+                    } else {
+                        showMessageBox('User-provided video not found or could not be loaded. Falling back to search.');
+                        console.warn("User-provided video failed to load, falling back to search.");
+                    }
+                } else {
+                    showMessageBox('Invalid user-provided YouTube URL. Falling back to search.');
+                    console.warn("Invalid user-provided YouTube URL, falling back to search.");
+                }
+            }
+
+            if (videoToLoad) {
+                createYoutubePlayer(videoToLoad.id);
+                currentVideoDuration = videoToLoad.durationSeconds;
+                currentVideoTitle = videoToLoad.snippet.title;
+                currentVideoDescription = videoToLoad.snippet.description;
+                chapterDisplay.textContent = currentVideoTitle;
+                await getCheckpoints(videoToLoad.id, currentVideoTitle, videoToLoad.snippet.description, "20% easy, 60% normal, 10% hard, 10% expert");
+            } else {
+                searchYouTubeVideo(CHAPTER_NAME, defaultYoutubeLanguage); 
+            }
+        };
+    </script>
+</body>
+</html>

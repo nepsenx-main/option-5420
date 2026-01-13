@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GunDB Chat</title>
+</head>
+<body>
+    <h2>GunDB Chat Example</h2>
+    <input id="name" placeholder="Your Name">
+    <input id="msg" placeholder="Type message...">
+    <button onclick="send()">Send</button>
+
+    <div id="chat"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script>
+        // GunDB with Public Relay Server
+        const gun = Gun({
+            peers: ['https://gun-manhattan.herokuapp.com/gun'] // Public Relay
+        });
+
+        const chat = gun.get('mychat');
+
+        function send() {
+            const name = document.getElementById('name').value;
+            const msg = document.getElementById('msg').value;
+            if (name && msg) {
+                chat.set({ name: name, message: msg, time: Date.now() });
+                document.getElementById('msg').value = '';
+            }
+        }
+
+        chat.map().on((data, id) => {
+            if (data) {
+                document.getElementById('chat').innerHTML += `<p><b>${data.name}:</b> ${data.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
