@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice AI Assistant</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS Variables for theming */
+        :root {
+            --body-bg-color: #1a1a2e;
+            --body-text-color: #e0e0e0;
+            --container-bg-color: #2a2a4a;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --input-bg-color: #4a4a6a;
+            --input-border-color: #5a5a7a;
+            --input-placeholder-color: #8080a0;
+            --modal-bg-color: #2a2a4a;
+            --modal-border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .light-theme {
+            --body-bg-color: #f0f2f5;
+            --body-text-color: #333333;
+            --container-bg-color: #ffffff;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --input-bg-color: #e9ecef;
+            --input-border-color: #ced4da;
+            --input-placeholder-color: #6c757d;
+            --modal-bg-color: #ffffff;
+            --modal-border-color: rgba(0, 0, 0, 0.15);
+        }
+
+
+          body {
+        overflow-x: hidden;
+        overflow-y: transparent; 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--body-bg-color);
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            /* Adjusted padding-bottom to make space for the fixed input area */
+            padding-bottom: 130px; /* Approx height of fixed input area + some buffer */
+            justify-content: flex-start; /* Align items to start, flex-grow will push */
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 20px; /* Keep padding at top */
+            box-sizing: border-box;
+            color: var(--body-text-color);
+            background-size: cover; /* Ensure background covers the entire body */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Do not repeat the background image */
+            /* Premium: Add a subtle radial gradient overlay */
+            background-image: radial-gradient(circle at center, rgba(34, 34, 54, 0.6) 0%, rgba(26, 26, 46, 0.8) 100%), var(--dynamic-background-image, url('https://image.pollinations.ai/prompt/nature'));
+            transition: background-color 0.5s ease, color 0.5s ease, background-image 1s ease-in-out; /* Smooth transition for background and theme */
+            gap: 20px; /* Space between elements */
+            position: relative; /* For theme toggle positioning */
+        }
+
+        /* Theme Toggle Button */
+        #themeToggle {
+            position: absolute;
+            top: 20px;
+            left: 20px; /* Changed from right to left */
+            background-color: var(--container-bg-color);
+            color: var(--body-text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            z-index: 10;
+        }
+        #themeToggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        #themeToggle:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Main Content Area for Centering AI Circle and Status Line */
+        .main-content-area {
+            flex-grow: 1; /* Allows this div to take up available space */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
+            width: 100%; /* Take full width */
+            padding: 20px; /* Add some padding */
+            box-sizing: border-box;
+        }
+
+        /* AI Circle Button Styles */
+        .ai-circle-button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .ai-circle-button {
+            width: 150px; /* Increased size */
+            height: 150px; /* Increased size */
+            border-radius: 50%;
+            background-color: #4f46e5; /* Default blue */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            /* Premium: Enhanced shadow */
+            box-shadow: 0 15px 40px rgba(79, 70, 229, 0.5), 0 0 0 0 rgba(79, 70, 229, 0);
+            position: relative; /* For GIF positioning */
+            overflow: hidden; /* Ensure GIF stays within circle */
+        }
+        .ai-circle-button:hover {
+            background-color: #4338ca;
+            transform: translateY(-3px); /* Slightly more pronounced lift */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4); /* Softer hover shadow */
+        }
+        .ai-circle-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Closer to surface on click */
+        }
+
+        /* GIF styling */
+        #aiGif {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the entire circular area */
+            border-radius: 50%; /* Keep it circular */
+            filter: grayscale(0.7); /* Slightly desaturated when idle */
+            transition: filter 0.3s ease;
+        }
+
+        /* States for the AI Circle Button and GIF */
+        .ai-circle-button.listening {
+            animation: pulse-border 1.5s infinite ease-out;
+            background-color: #4f46e5; /* Blue when listening */
+        }
+        .ai-circle-button.listening #aiGif {
+            filter: grayscale(0) brightness(1.2) saturate(1.2); /* Brighter, full color when listening */
+        }
+
+        .ai-circle-button.speaking {
+            background-color: #22c55e; /* Green when speaking */
+            box-shadow: 0 15px 40px rgba(34, 197, 94, 0.5); /* Scaled shadow */
+        }
+        .ai-circle-button.speaking #aiGif {
+            filter: hue-rotate(90deg) brightness(1.5); /* Greenish tint when speaking */
+        }
+
+        .ai-circle-button.processing {
+            background-color: #f59e0b; /* Orange when processing/generating */
+            box-shadow: 0 15px 40px rgba(245, 158, 11, 0.5); /* Scaled shadow */
+        }
+        .ai-circle-button.processing #aiGif {
+            filter: grayscale(0.2); /* Slightly desaturated when processing */
+        }
+
+        .ai-circle-button.error-state { /* New state for error */
+            background-color: #dc2626; /* Red for error */
+            box-shadow: 0 15px 40px rgba(220, 38, 38, 0.5); /* Scaled shadow */
+        }
+        .ai-circle-button.error-state #aiGif {
+            filter: grayscale(1) brightness(0.7); /* Darker, grayscale for error */
+        }
+
+        .ai-circle-button.no-support #aiGif {
+            filter: grayscale(1); /* Fully grayscale for no support */
+        }
+
+
+        /* Keyframe for pulse */
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7); }
+            70% { box-shadow: 0 0 0 40px rgba(79, 70, 229, 0); } /* Scaled pulse */
+            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
+
+        /* New status display line */
+        #statusLine {
+            font-size: 1.1rem;
+            color: white;
+            text-align: center;
+            min-height: 28px; /* To prevent layout shift */
+            margin-top: 20px; /* Space between circle and status */
+            font-weight: 600; /* Make it stand out a bit more */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Subtle text shadow */
+        }
+
+        /* Fixed Input Container */
+        .fixed-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 0; /* Vertical padding, no horizontal padding here */
+            background: transparent; /* Match body background for seamless look */
+            z-index: 999; /* Ensure it's above other content */
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); /* Shadow to separate from content above */
+            transition: background-color 0.5s ease; /* Smooth theme transition */
+        }
+
+        /* Text Input Area Styles - now centered within fixed container */
+        .text-input-area {
+            width: 100%;
+            max-width: 650px; /* Constrain width on larger screens */
+            margin: 0 auto; /* Center horizontally within fixed container */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: var(--container-bg-color);
+            border-radius: 20px;
+            /* Premium: Enhanced shadow */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(0, 0, 0, 0.2); /* Added inner shadow */
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .manual-text-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border-color);
+            background-color: var(--input-bg-color);
+            color: var(--body-text-color);
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 60px;
+            /* Premium: Subtle inner shadow for input field */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+        .manual-text-input:focus {
+            outline: none;
+            border-color: #6a6ad0; /* Slightly lighter blue on focus */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 0 3px rgba(79, 70, 229, 0.3); /* Focus glow */
+        }
+        .manual-text-input::placeholder {
+            color: var(--input-placeholder-color);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: var(--modal-bg-color);
+            padding: 30px;
+            border-radius: 15px;
+            /* Premium: Enhanced modal shadow */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--modal-border-color); /* Stronger shadow, subtle border */
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid var(--modal-border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .modal-content select {
+            background-color: var(--input-bg-color);
+            border: 1px solid var(--input-border-color);
+            color: var(--body-text-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23e0e0e0%22%20d%3D%22M287%2C197.3L159.2%2C69.5c-3.1-3.1-8.2-3.1-11.3%2C0L5.4%2C197.3c-3.1%2C3.1-3.1%2C8.2%2C0%2C11.3l11.3%2C11.3c3.1%2C3.1%2C8.2%2C3.1%2C11.3%2C0l119.5-119.5l119.5%2C119.5c3.1%2C3.1-8.2%2C3.1-11.3%2C0l11.3-11.3C290.1%2C205.5%2C290.1%2C200.4%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 12px auto;
+            cursor: pointer;
+            margin-bottom: 20px;
+            /* Premium: Subtle inner shadow for select */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .button-primary {
+            background-color: #4f46e5;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+        .button-primary:hover {
+            background-color: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.4);
+        }
+        .button-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
+        }
+        .button-secondary {
+            background-color: #64748b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(100, 116, 139, 0.3);
+        }
+        .button-secondary:hover {
+            background-color: #475569;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(100, 116, 139, 0.4);
+        }
+        .button-secondary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(100, 116, 139, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="themeToggle">
+        <i class="fas fa-sun" id="themeIcon"></i>
+    </button>
+
+    <!-- Main Content Area for Centering AI Circle and Status Line -->
+    <div class="main-content-area">
+        <!-- AI Circle Button Container -->
+        <div class="ai-circle-button-container">
+            <button id="aiCircleButton" class="ai-circle-button">
+                <!-- GIF element -->
+                <img id="aiGif" src="https://uploads.onecompiler.io/438cc35sk/43qqqp9h2/5458a14ae4c8f07055b7441ff0f234cf.gif" alt="AI Assistant GIF">
+            </button>
+        </div>
+
+        <!-- New status line -->
+        <div id="statusLine">Initializing...</div>
+    </div>
+
+    <!-- Fixed Input Container -->
+    <div class="fixed-input-container">
+        <!-- Text input area is now always visible and serves as the main interaction area -->
+        <div id="textInputArea" class="text-input-area">
+            <textarea id="manualTextInput" class="manual-text-input" placeholder="Speak or type your question here..."></textarea>
+        </div>
+    </div>
+
+    <!-- Voice Model Selection Modal -->
+    <div id="voiceModelModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-white mb-6">Settings</h2>
+            <div class="voice-model-selection mb-4">
+                <label for="modalVoiceModel" class="block text-gray-400 text-sm font-medium mb-2">Choose Voice:</label>
+                <select id="modalVoiceModel" class="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="man" data-gender="male" selected>Man</option>
+                    <option value="woman" data-gender="female">Woman</option>
+                </select>
+            </div>
+            <!-- New Language Selection Dropdown -->
+            <div class="language-selection mb-4">
+                <label for="modalLanguage" class="block text-gray-400 text-sm font-medium mb-2">Input Language:</label>
+                <select id="modalLanguage" class="w-full p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button id="closeModalButton" class="button-secondary">Close</button>
+                <button id="saveModelButton" class="button-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("Script starting..."); // Added for debugging
+
+        // Get references to HTML elements
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        // Removed settingsButton from HTML, so remove its reference here
+        // const settingsButton = document.getElementById('settingsButton'); // This line is now removed
+        const aiCircleButton = document.getElementById('aiCircleButton');
+        const aiGif = document.getElementById('aiGif');
+        const statusLine = document.getElementById('statusLine');
+
+        const voiceModelModal = document.getElementById('voiceModelModal');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const saveModelButton = document.getElementById('saveModelButton');
+        const modalVoiceModelSelect = document.getElementById('modalVoiceModel');
+        const modalLanguageSelect = document.getElementById('modalLanguage'); // New language select
+
+        const manualTextInput = document.getElementById('manualTextInput');
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isSpeaking = false;
+        let currentVoiceModel = modalVoiceModelSelect.value;
+        let currentLanguage = 'en-US'; // Default language
+        let availableVoices = [];
+        let typingTimer;
+        const doneTypingInterval = 1000; // 1 second
+
+        // --- Local Storage for Conversation History ---
+        let conversationHistory = []; // Stores messages for the current chat
+        let currentChatId = null; // ID of the current chat session
+        let chats = []; // Array to store metadata of all chats (for a future sidebar)
+
+        // Function to generate a unique ID for a new chat
+        function generateChatId() {
+            return 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Function to generate a date-based title for voice chats
+        function generateVoiceChatTitle() {
+            const date = new Date();
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+            const year = date.getFullYear(); // Added year for more uniqueness
+            return `Voice Chat (${day}.${month}.${year})`;
+        }
+
+        // Function to check if we need to create a new chat for today
+        function shouldCreateNewChat() {
+            if (!currentChatId) return true;
+            
+            // Get current chat from chats array
+            const currentChat = chats.find(c => c.id === currentChatId);
+            if (!currentChat) return true;
+            
+            // Parse the chat's creation date
+            const chatDate = new Date(currentChat.createdAt);
+            const today = new Date();
+            
+            // Compare year, month, and day
+            return chatDate.getFullYear() !== today.getFullYear() ||
+                   chatDate.getMonth() !== today.getMonth() ||
+                   chatDate.getDate() !== today.getDate();
+        }
+
+        /**
+         * Loads the last active chat session or initializes a new one.
+         * It also loads the conversation history for the determined current chat.
+         */
+        function loadChat() {
+            // 1. Load the list of all chats metadata
+            chats = JSON.parse(localStorage.getItem('chats')) || [];
+            console.log("Chats array loaded at start of loadChat:", chats);
+
+            // 2. Try to load the last active chat ID from the previous session
+            const lastActiveChatId = localStorage.getItem('lastActiveChatId');
+
+            let chatFound = false;
+            if (lastActiveChatId) {
+                const foundChat = chats.find(c => c.id === lastActiveChatId);
+                if (foundChat) {
+                    // Check if we need to create a new chat for today
+                    if (shouldCreateNewChat()) {
+                        console.log("Creating new chat for today...");
+                        currentChatId = generateChatId();
+                        const newChatTitle = generateVoiceChatTitle();
+                        const newChatEntry = {
+                            id: currentChatId,
+                            title: newChatTitle,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            type: 'voice'
+                        };
+                        chats.unshift(newChatEntry);
+                        chatFound = true;
+                    } else {
+                        currentChatId = lastActiveChatId;
+                        chatFound = true;
+                        console.log(`Loaded last active chat ID: ${currentChatId}`);
+                    }
+                } else {
+                    console.warn(`Last active chat ID ${lastActiveChatId} not found in current chats list. It might have been deleted or is stale.`);
+                }
+            }
+
+            // 3. If no valid last active chat was found, or if the 'chats' array was empty initially, create a new voice chat.
+            if (!chatFound || chats.length === 0) {
+                currentChatId = generateChatId();
+                const newChatTitle = generateVoiceChatTitle();
+                const newChatEntry = {
+                    id: currentChatId,
+                    title: newChatTitle,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    type: 'voice' // Explicitly mark this as a voice chat
+                };
+
+                // Add the new chat to the beginning of the chats array if it's not already there
+                if (!chats.some(c => c.id === currentChatId)) {
+                    chats.unshift(newChatEntry);
+                }
+
+                localStorage.setItem('chats', JSON.stringify(chats));
+                console.log(`Created/Ensured new voice chat with ID: ${currentChatId} and title: ${newChatTitle}`);
+                console.log("Chats array after ensuring new chat:", chats);
+            }
+
+            // 4. Load the conversation history for the determined currentChatId
+            conversationHistory = JSON.parse(localStorage.getItem(`chat_${currentChatId}`)) || [];
+            console.log("Loaded conversation history for current chat ID:", currentChatId, conversationHistory);
+
+            // Ensure the currentChatId is always persisted as the last active one
+            localStorage.setItem('lastActiveChatId', currentChatId);
+        }
+
+        /**
+         * Saves the current conversation history to local storage.
+         * Also updates the `updatedAt` timestamp for the current chat in the sidebar list,
+         * ensuring that recent chats appear higher in the history list.
+         */
+        function saveConversation() {
+            if (!currentChatId) {
+                console.error("No current chat ID set - cannot save conversation");
+                return;
+            }
+
+            // 1. Save the detailed conversation history
+            localStorage.setItem(`chat_${currentChatId}`, JSON.stringify(conversationHistory));
+            console.log("Conversation for current chat saved:", conversationHistory);
+
+            // 2. Update the chat metadata
+            let chatIndex = chats.findIndex(c => c.id === currentChatId);
+            const now = new Date().toISOString();
+
+            if (chatIndex >= 0) {
+                // Update existing chat entry
+                chats[chatIndex].updatedAt = now;
+                // If you want existing chats to also update their title to the current date on interaction, uncomment below:
+                // chats[chatIndex].title = generateVoiceChatTitle(); // Only update if you want title to change on every interaction
+            } else {
+                // Create new chat entry (shouldn't normally happen if loadChat is robust)
+                const newChatTitle = generateVoiceChatTitle();
+                chats.unshift({
+                    id: currentChatId,
+                    title: newChatTitle,
+                    createdAt: now,
+                    updatedAt: now,
+                    type: 'voice'
+                });
+                chatIndex = 0; // Since we unshifted, it's now at position 0
+                console.warn("New chat added during saveConversation (fallback) - this might indicate an issue in loadChat logic if not intended.");
+            }
+
+            // 3. Ensure the chat is at the top of the list (most recent)
+            if (chatIndex > 0) {
+                const [chat] = chats.splice(chatIndex, 1);
+                chats.unshift(chat);
+            }
+
+            // 4. Save everything
+            localStorage.setItem('chats', JSON.stringify(chats));
+            localStorage.setItem('lastActiveChatId', currentChatId);
+            console.log("Chat metadata updated and saved. Current chats array:", chats);
+        }
+
+        // --- Theme Logic ---
+        function applyTheme(theme) {
+            document.body.classList.remove('light-theme');
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            } else {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Apply saved theme on load
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        applyTheme(savedTheme);
+
+        // Function to update the UI state
+        function updateUIState(state, message = "") {
+            aiCircleButton.classList.remove('listening', 'speaking', 'processing', 'generating', 'error-state', 'no-support');
+            aiGif.style.filter = 'grayscale(0.7)';
+            aiGif.style.transform = 'scale(1)';
+
+            switch (state) {
+                case 'initializing':
+                    statusLine.textContent = "Initializing...";
+                    manualTextInput.placeholder = "Speak or type your question here...";
+                    aiCircleButton.classList.add('processing');
+                    aiCircleButton.style.backgroundColor = '#f59e0b';
+                    aiGif.style.filter = 'grayscale(0.2)';
+                    break;
+                case 'ready':
+                    statusLine.textContent = "Ready. Tap the circle to speak or open settings.";
+                    manualTextInput.placeholder = "Speak or type your question here...";
+                    aiCircleButton.style.backgroundColor = '#4f46e5';
+                    aiGif.style.filter = 'grayscale(0.7)';
+                    break;
+                case 'listening':
+                    statusLine.textContent = "Listening...";
+                    manualTextInput.placeholder = "Listening... Speak now.";
+                    aiCircleButton.classList.add('listening');
+                    aiCircleButton.style.backgroundColor = '#4f46e5';
+                    aiGif.style.filter = 'grayscale(0) brightness(1.2) saturate(1.2)';
+                    break;
+                case 'processing':
+                    statusLine.textContent = "Processing...";
+                    manualTextInput.placeholder = "Processing your request...";
+                    aiCircleButton.classList.add('processing');
+                    aiCircleButton.style.backgroundColor = '#f59e0b';
+                    aiGif.style.filter = 'grayscale(0.2)';
+                    break;
+                case 'generating':
+                    statusLine.textContent = "Generating AI response...";
+                    manualTextInput.placeholder = "Generating AI response...";
+                    aiCircleButton.classList.add('generating');
+                    aiCircleButton.style.backgroundColor = '#f59e0b';
+                    aiGif.style.filter = 'grayscale(0.2)';
+                    break;
+                case 'speaking':
+                    statusLine.textContent = "AI is speaking...";
+                    manualTextInput.placeholder = "AI is speaking...";
+                    aiCircleButton.classList.add('speaking');
+                    aiCircleButton.style.backgroundColor = '#22c55e';
+                    aiGif.style.filter = 'hue-rotate(90deg) brightness(1.5)';
+                    break;
+                case 'error':
+                    statusLine.textContent = message || "An error occurred. Please try typing your question.";
+                    manualTextInput.placeholder = "Error. Please try again.";
+                    manualTextInput.value = "";
+                    aiCircleButton.classList.add('error-state');
+                    aiCircleButton.style.backgroundColor = '#dc2626';
+                    aiGif.style.filter = 'grayscale(1) brightness(0.7)';
+                    break;
+                case 'no-support':
+                    statusLine.textContent = "Speech Recognition not supported in this browser. Please use text input.";
+                    manualTextInput.placeholder = "Type your question here (Speech not supported).";
+                    aiCircleButton.classList.add('no-support');
+                    aiCircleButton.style.backgroundColor = '#64748b';
+                    aiGif.style.filter = 'grayscale(1)';
+                    break;
+            }
+        }
+
+        function loadVoices() {
+            return new Promise(resolve => {
+                if (availableVoices.length > 0) {
+                    return resolve(availableVoices);
+                }
+                const synth = window.speechSynthesis;
+                synth.onvoiceschanged = () => {
+                    availableVoices = synth.getVoices();
+                    resolve(availableVoices);
+                };
+                if (synth.getVoices().length > 0) {
+                    availableVoices = synth.getVoices();
+                    resolve(availableVoices);
+                }
+            });
+        }
+
+        async function synthesizeSpeech(text, genderHint = currentVoiceModel, langHint = currentLanguage) {
+            if (!window.speechSynthesis) {
+                console.error("Web Speech Synthesis not supported in this browser.");
+                return;
+            }
+
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+
+            isSpeaking = true;
+
+            const utterance = new SpeechSynthesisUtterance(text);
+
+            if (availableVoices.length === 0) {
+                await loadVoices();
+            }
+
+            let selectedVoice = null;
+            // Filter voices by the selected language first, then by gender
+            // Use the base language code for filtering (e.g., 'en' from 'en-US')
+            const baseLangCode = langHint.split('-')[0];
+            const voicesForLang = availableVoices.filter(voice => voice.lang.startsWith(baseLangCode));
+            console.log(`Attempting to synthesize speech for language: ${langHint}, gender: ${genderHint}`);
+            console.log("Available voices for selected language:", voicesForLang.map(v => v.name));
+
+
+            if (genderHint === 'man') {
+                selectedVoice = voicesForLang.find(voice =>
+                    voice.name.toLowerCase().includes('male') ||
+                    voice.name.toLowerCase().includes('david') ||
+                    voice.name.toLowerCase().includes('paul') ||
+                    (voice.name.toLowerCase().includes('google') && voice.name.toLowerCase().includes('male')) // More general Google male voice
+                );
+            } else if (genderHint === 'woman') {
+                selectedVoice = voicesForLang.find(voice =>
+                    voice.name.toLowerCase().includes('female') ||
+                    voice.name.toLowerCase().includes('zira') ||
+                    voice.name.toLowerCase().includes('sara') ||
+                    (voice.name.toLowerCase().includes('google') && voice.name.toLowerCase().includes('female')) // More general Google female voice
+                );
+            }
+
+            // Fallback to any voice for the language, then any default, then first available
+            if (!selectedVoice && voicesForLang.length > 0) {
+                selectedVoice = voicesForLang.find(voice => voice.default) || voicesForLang[0];
+                console.warn(`No specific gender voice found for ${langHint}, falling back to default/first voice for this language: ${selectedVoice ? selectedVoice.name : 'None'}`);
+            } else if (!selectedVoice) {
+                selectedVoice = availableVoices.find(voice => voice.default) || availableVoices[0];
+                console.warn(`No voice found for language ${langHint}, falling back to browser default: ${selectedVoice ? selectedVoice.name : 'None'}`);
+            }
+
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                utterance.lang = selectedVoice.lang; // Ensure utterance uses the voice's specific language code
+                console.log(`Using voice: ${selectedVoice.name} (${selectedVoice.lang})`);
+            } else {
+                console.warn("No suitable voice found at all, using browser default settings for utterance.");
+                utterance.lang = langHint; // Fallback to selected language hint if no voice is found
+            }
+
+            utterance.onstart = () => {
+                updateUIState('speaking');
+            };
+
+            utterance.onend = () => {
+                isSpeaking = false;
+                updateUIState('ready'); // Set to ready after speaking
+            };
+
+            utterance.onerror = (event) => {
+                isSpeaking = false;
+                console.error('Speech synthesis error:', event.error);
+                updateUIState('error', `Speech synthesis failed: ${event.error}. Text was: "${text}"`);
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Function to play hello sound based on current voice model and language
+        function playHelloSound() {
+            // Stop any ongoing speech synthesis before playing the new sound
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+
+            const helloText = "Hello! How can I help you?";
+            synthesizeSpeech(helloText, currentVoiceModel, currentLanguage);
+        }
+
+        // Function to update the background image based on user message
+        function updateBackgroundImage(message) {
+            if (!message || message.trim() === '') return;
+            
+            const formattedInput = message.trim().replace(/\s+/g, '-').replace(/_/g, '-');
+            const backgroundImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(formattedInput)}`;
+            
+            // Set the background image with a smooth transition
+            document.body.style.setProperty('--dynamic-background-image', `url('${backgroundImageUrl}')`);
+        }
+
+        // Function to build prompt with memory for Pollinations.AI
+        function buildPromptWithMemory(chatHistory, currentInput) {
+            let formattedPrompt = '';
+            const relevantMessages = [];
+
+            // Get the last 5 messages (user or model), ensuring they alternate roles
+            // Iterate backwards to get the most recent messages
+            for (let i = chatHistory.length - 1; i >= 0 && relevantMessages.length < 5; i--) {
+                const msg = chatHistory[i];
+                // Ensure we only add user and model messages
+                if (msg.role === 'user' || msg.role === 'model') {
+                    relevantMessages.unshift(msg); // Add to the beginning to maintain chronological order
+                }
+            }
+
+            // Format the relevant messages without explicit "User:" or "Assistant:" labels
+            relevantMessages.forEach(msg => {
+                const text = msg.parts?.map(part => part.text || '').join(' ').trim();
+                if (text) {
+                    formattedPrompt += `${text}\n`;
+                }
+            });
+
+            formattedPrompt += `${currentInput}`; // The current user input
+
+            return formattedPrompt;
+        }
+
+        // Main function to generate the URL and handle fallback
+        async function generatePollinationsUrl(chatHistory, currentInput) {
+            const prompt = buildPromptWithMemory(chatHistory, currentInput);
+            const encodedPrompt = encodeURIComponent(prompt);
+
+            const primaryUrl = `https://text.pollinations.ai/${encodedPrompt}`;
+            const fallbackUrl = `https://text.pollinations.ai/${encodeURIComponent(currentInput)}`;
+
+            try {
+                const res = await fetch(primaryUrl);
+                if (!res.ok) {
+                    console.warn(`Primary Pollinations.ai URL failed (${res.status}). Falling back to simpler prompt.`);
+                    throw new Error('Primary failed');
+                }
+                return primaryUrl;
+            } catch (err) {
+                console.error("Error fetching primary Pollinations URL, using fallback:", err);
+                return fallbackUrl;
+            }
+        }
+
+        async function processUserInput(input, isSpeech = true) {
+            stopAllAIActivity();
+
+            let originalInput = input.trim();
+            if (!originalInput) {
+                updateUIState('ready');
+                return;
+            }
+            // formattedInput is no longer directly used for Pollinations.AI URL, but kept for background image
+            let formattedInput = originalInput.replace(/\s+/g, '-').replace(/_/g, '-');
+
+            // Update background image based on user message
+            updateBackgroundImage(originalInput);
+
+            // Add user message to conversation history
+            conversationHistory.push({ role: 'user', parts: [{ text: originalInput }], timestamp: new Date().toISOString() });
+            saveConversation(); // Save after user input
+
+            manualTextInput.value = '';
+
+            updateUIState('generating');
+
+            try {
+                // Use the new generatePollinationsUrl function to get the URL with memory
+                const urlToFetch = await generatePollinationsUrl(conversationHistory, originalInput);
+                const textResponse = await fetch(urlToFetch);
+
+                if (!textResponse.ok) {
+                    const errorText = await textResponse.text();
+                    throw new Error(`Text generation failed with status ${textResponse.status}: ${errorText}`);
+                }
+
+                const aiTextResponse = await textResponse.text();
+                console.log("AI Text Response:", aiTextResponse); // Log AI response to check its language
+
+                // Add AI message to conversation history
+                conversationHistory.push({ role: 'model', parts: [{ text: aiTextResponse }], timestamp: new Date().toISOString() });
+                saveConversation(); // Save after AI response
+
+                // Synthesize the AI's text response into speech using the current voice model and language
+                await synthesizeSpeech(aiTextResponse, currentVoiceModel, currentLanguage);
+
+            } catch (error) {
+                console.error("Error during AI response generation or speech synthesis:", error);
+                updateUIState('error', `Error: ${error.message}. Please try again.`);
+                // In case of error, save the history without the AI's response if it failed
+                saveConversation();
+            }
+        }
+
+        let isRecognitionActive = false; // Track if recognition is explicitly started by user
+
+        function startSpeechRecognition() {
+            if (!SpeechRecognition) {
+                updateUIState('no-support');
+                return;
+            }
+
+            if (recognition && (recognition.recognizing || recognition.listening)) {
+                recognition.stop(); // Stop any existing recognition instance
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = false; // We want a single utterance
+            recognition.interimResults = false; // Get final results only
+            recognition.lang = currentLanguage; // Use the selected language
+
+            recognition.onstart = () => {
+                updateUIState('listening');
+                isRecognitionActive = true;
+                console.log("Speech recognition started.");
+            };
+
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript;
+                console.log("Speech result:", speechResult);
+                manualTextInput.value = speechResult; // Display recognized text
+                processUserInput(speechResult, true);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                isRecognitionActive = false; // Reset active state on error
+                if (event.error === 'no-speech') {
+                    updateUIState('ready', "No speech detected. Tap the circle to speak again.");
+                } else if (event.error === 'not-allowed') {
+                    updateUIState('error', "Microphone access denied. Please allow microphone in browser settings.");
+                } else {
+                    updateUIState('error', `Speech recognition error: ${event.error}`);
+                }
+            };
+
+            recognition.onend = () => {
+                isRecognitionActive = false; // Recognition ended, reset active state
+                updateUIState('ready'); // Set to ready after recognition ends
+                console.log("Speech recognition ended.");
+            };
+
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error("Error starting speech recognition:", e);
+                updateUIState('error', "Could not start speech recognition. Is your microphone ready?");
+                isRecognitionActive = false; // Ensure state is false if start fails
+            }
+        }
+
+        function stopSpeechRecognition() {
+            if (recognition && (recognition.recognizing || recognition.listening)) {
+                recognition.stop();
+                isRecognitionActive = false; // Explicitly set to false when stopped
+            }
+        }
+
+        function stopSpeechSynthesis() {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+            }
+        }
+
+        function stopAllAIActivity() {
+            stopSpeechRecognition();
+            stopSpeechSynthesis();
+            updateUIState('ready'); // Reset UI to ready state
+        }
+
+        // --- Language Options Data ---
+        const languageOptions = [
+            { code: 'en-US', name: 'English (US)' },
+            { code: 'en-GB', name: 'English (UK)' },
+            { code: 'es-ES', name: 'Spanish (Spain)' },
+            { code: 'fr-FR', name: 'French (France)' },
+            { code: 'de-DE', name: 'German (Germany)' },
+            { code: 'it-IT', name: 'Italian (Italy)' },
+            { code: 'ja-JP', name: 'Japanese (Japan)' },
+            { code: 'ko-KR', name: 'Korean (Korea)' },
+            { code: 'zh-CN', name: 'Chinese (Mandarin, Simplified)' },
+            { code: 'pt-BR', name: 'Portuguese (Brazil)' },
+            { code: 'ru-RU', name: 'Russian (Russia)' },
+            { code: 'ar-SA', name: 'Arabic (Saudi Arabia)' },
+            { code: 'hi-IN', name: 'Hindi (India)' },
+            { code: 'bn-BD', name: 'Bengali (Bangladesh)' },
+            { code: 'bn-IN', name: 'Bengali (India)' }
+            // Add more languages as needed
+        ];
+
+        // Function to populate language dropdown
+        function populateLanguageDropdown() {
+            modalLanguageSelect.innerHTML = ''; // Clear existing options
+            languageOptions.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang.code;
+                option.textContent = lang.name;
+                modalLanguageSelect.appendChild(option);
+            });
+            // Set the selected value after populating
+            modalLanguageSelect.value = currentLanguage;
+        }
+
+        // --- Voice Model Modal Logic ---
+        function openVoiceModelModal() {
+            // Pre-select the currently active voice model in the modal
+            modalVoiceModelSelect.value = currentVoiceModel;
+            // Populate and pre-select the current language
+            populateLanguageDropdown();
+            modalLanguageSelect.value = currentLanguage;
+
+            voiceModelModal.classList.remove('hidden');
+        }
+
+        function closeVoiceModelModal() {
+            voiceModelModal.classList.add('hidden');
+        }
+
+        closeModalButton.addEventListener('click', closeVoiceModelModal);
+        saveModelButton.addEventListener('click', () => {
+            const newVoiceModel = modalVoiceModelSelect.value;
+            const newLanguage = modalLanguageSelect.value;
+
+            let settingsChanged = false;
+
+            if (newVoiceModel !== currentVoiceModel) {
+                currentVoiceModel = newVoiceModel;
+                localStorage.setItem('selectedVoiceModel', currentVoiceModel);
+                console.log("Voice model saved:", currentVoiceModel);
+                settingsChanged = true;
+            }
+            
+            if (newLanguage !== currentLanguage) {
+                currentLanguage = newLanguage;
+                localStorage.setItem('selectedLanguage', currentLanguage);
+                console.log("Language saved:", currentLanguage);
+                settingsChanged = true;
+                // If recognition was active, stop and restart it with the new language
+                if (isRecognitionActive) { // Use the flag here
+                    stopSpeechRecognition();
+                    stopSpeechSynthesis(); // Stop speech synthesis immediately before restarting recognition
+                    startSpeechRecognition(); // Restart recognition with new language
+                }
+            }
+
+            if (settingsChanged) {
+                playHelloSound(); // Play hello sound if any setting changed
+            }
+            closeVoiceModelModal();
+        });
+
+        // Event listener to play sound on voice model change within modal
+        modalVoiceModelSelect.addEventListener('change', () => {
+            const selectedGender = modalVoiceModelSelect.value;
+            const selectedLang = modalLanguageSelect.value; // Use the currently selected language in the modal
+            synthesizeSpeech("Hello! How can I help you?", selectedGender, selectedLang);
+        });
+
+        // Event listener to play sound on language change within modal (using current voice model)
+        modalLanguageSelect.addEventListener('change', () => {
+            const selectedLang = modalLanguageSelect.value;
+            synthesizeSpeech("Hello! How can I help you?", currentVoiceModel, selectedLang);
+        });
+
+        // Event listener for AI circle button (toggle listening or open settings)
+        aiCircleButton.addEventListener('click', () => {
+            if (isSpeaking || statusLine.textContent.includes("Processing") || statusLine.textContent.includes("Generating")) {
+                // If AI is actively speaking, processing, or generating, a single click stops all activity
+                stopAllAIActivity();
+            } else if (isRecognitionActive) { // Check if recognition is currently active
+                // If recognition is currently active, stop it
+                stopSpeechRecognition();
+            } else {
+                // If AI is ready and not listening, open the settings modal
+                openVoiceModelModal();
+            }
+        });
+
+        // Event listener for manual text input
+        manualTextInput.addEventListener('input', () => {
+            clearTimeout(typingTimer);
+            if (manualTextInput.value) {
+                // If there's text, pause speech recognition
+                if (isRecognitionActive) { // Check if recognition is active
+                    stopSpeechRecognition();
+                }
+                typingTimer = setTimeout(() => {
+                    // Stop any ongoing speech synthesis before processing new text input
+                    if (window.speechSynthesis.speaking) {
+                        stopSpeechSynthesis();
+                    }
+                    processUserInput(manualTextInput.value, false);
+                }, doneTypingInterval);
+            } else {
+                // If text input is cleared, go back to ready state
+                updateUIState('ready');
+            }
+        });
+
+        manualTextInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) { // Enter without Shift
+                event.preventDefault(); // Prevent new line
+                clearTimeout(typingTimer); // Clear any pending typing timer
+                if (manualTextInput.value.trim()) {
+                    // Stop any ongoing speech synthesis before processing new text input
+                    if (window.speechSynthesis.speaking) {
+                        stopSpeechSynthesis();
+                    }
+                    processUserInput(manualTextInput.value, false);
+                }
+            }
+        });
+
+        // Load saved voice model and language on startup
+        const savedVoiceModel = localStorage.getItem('selectedVoiceModel');
+        if (savedVoiceModel) {
+            currentVoiceModel = savedVoiceModel;
+            modalVoiceModelSelect.value = currentVoiceModel; // Set modal's default value
+        }
+
+        const savedLanguage = localStorage.getItem('selectedLanguage');
+        if (savedLanguage) {
+            currentLanguage = savedLanguage;
+            // The dropdown will be populated and set in openVoiceModelModal or populateLanguageDropdown
+        }
+
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("DOMContentLoaded fired."); // Added for debugging
+            updateUIState('initializing');
+            loadChat(); // Initialize or load chat history
+            populateLanguageDropdown(); // Populate dropdown early
+            await loadVoices(); // Pre-load voices for faster synthesis
+            updateUIState('ready');
+            // Do NOT automatically start speech recognition on load. User must tap the circle.
+        });
+        console.log("Script finished loading."); // Added for debugging
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QCJKG8NXX0"></script>
+    <script src="https://NepsenX.github.io/cloudgaminghub/an.js"></script>
+</body>
+</html>
