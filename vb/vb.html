@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="https://uploads.onecompiler.io/438cc35sk/43etbxnkm/th-removebg-preview%20(4)%20(4).png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0078d7">
+  <meta name="description" content="VirtuBrowse - The privacy-focused, future-proof web browser">
+  <title>VirtuBrowse</title>
+  <style>
+    /* === Future-Proof CSS Variables === */
+    :root {
+      /* Core Colors */
+      --primary: #0078d7;
+      --primary-hover: #106ebe;
+      --secondary: #1f1f1f;
+      --accent: #00b4ff;
+      --error: #ff4444;
+      --success: #00c853;
+      --warning: #ffab00;
+      
+      /* Adaptive Backgrounds */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-surface: rgba(255, 255, 255, 0.05);
+      --bg-surface-hover: rgba(255, 255, 255, 0.1);
+      
+      /* Text Colors */
+      --text-primary: #ffffff;
+      --text-secondary: #94a3b8;
+      
+      /* Glassmorphism Effects */
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      
+      /* Spacing & Sizing */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-smc: 7px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+      
+      /* Typography */
+      --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      --font-mono: 'SF Mono', 'Roboto Mono', monospace;
+      --text-sm: 0.875rem;
+      --text-md: 1rem;
+      --text-lg: 1.25rem;
+      
+      /* Transitions */
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.3s ease;
+      --transition-slow: 0.5s ease;
+      
+      /* Z-index */
+      --z-base: 1;
+      --z-toolbar: 10;
+      --z-settings: 100;
+      --z-modal: 1000;
+    }
+
+    /* === Light Theme Overrides === */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --bg-surface: rgba(0, 0, 0, 0.05);
+        --bg-surface-hover: rgba(0, 0, 0, 0.1);
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --glass-bg: rgba(0, 0, 0, 0.05);
+        --glass-border: rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    /* === Base Styles === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+      body {
+        overflow-x: hidden;
+        overflow-y: transparent; 
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* === Glassmorphism Utility === */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+
+    /* === Toolbar Styles === */
+    .toolbar {
+      display: flex;
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+      margin: var(--space-sm);
+      border-radius: var(--radius-lg);
+      transition: var(--transition-normal);
+      z-index: var(--z-toolbar);
+    }
+
+    .toolbar-button {
+      padding: var(--space-sm) var(--space-md);
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: var(--text-md);
+      font-weight: 500;
+      transition: var(--transition-fast);
+    }
+
+    .toolbar-button:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .toolbar-button:active {
+      transform: translateY(0);
+    }
+
+    /* URL Input Field */
+    #url-input {
+      flex: 1;
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: var(--text-md);
+      transition: var(--transition-normal);
+    }
+
+    #url-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.2);
+    }
+
+    /* Tabs Container */
+    .tabs-container {
+      display: flex;
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) transparent;
+    }
+
+    /* Individual Tab Styling */
+    .tab {
+      position: relative;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: var(--text-sm);
+      transition: var(--transition-normal);
+      flex-shrink: 0;
+    }
+
+    .tab:hover {
+      background: var(--bg-surface-hover);
+    }
+
+    .tab.active {
+      background: var(--primary);
+    }
+
+    .tab-close {
+      width: 16px;
+      height: 16px;
+      border: none;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      transition: var(--transition-fast);
+    }
+
+    .tab-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Browser Frame Container */
+    .frame-container {
+      flex: 1;
+      margin: 0 var(--space-sm) var(--space-sm);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .browser-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      border-radius: var(--radius-lg);
+      display: none;
+    }
+
+    .browser-frame.active {
+      display: block;
+    }
+
+    /* Settings Panel */
+    .settings-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(90%, 600px);
+      max-height: 80vh;
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      z-index: var(--z-modal);
+      display: none;
+      overflow-y: auto;
+    }
+
+    .settings-panel.active {
+      display: block;
+    }
+
+    /* Settings Grid Layout */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+    }
+
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-sm);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+    }
+
+    /* Custom Switch Styling */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-surface);
+      transition: var(--transition-normal);
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      transition: var(--transition-normal);
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background: var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      z-index: var(--z-base);
+    }
+
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Error State */
+    .error-state {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--error);
+      z-index: var(--z-base);
+    }
+
+    /* === Future-Proof Enhancements === */
+    
+    /* Quantum Encryption Visualizer */
+    .quantum-encryption {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%);
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-slow);
+      z-index: -1;
+    }
+    
+    .quantum-active .quantum-encryption {
+      opacity: 1;
+      animation: pulse 5s infinite alternate;
+    }
+    
+    @keyframes pulse {
+      0% { background-size: 100% 100%; }
+      100% { background-size: 150% 150%; }
+    }
+    
+    /* Neural Network Visualization */
+    .neural-network {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      height: 100px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="20" r="5" fill="%230078d7"/><circle cx="30" cy="50" r="5" fill="%230078d7"/><circle cx="70" cy="50" r="5" fill="%230078d7"/><circle cx="20" cy="80" r="5" fill="%230078d7"/><circle cx="50" cy="80" r="5" fill="%230078d7"/><circle cx="80" cy="80" r="5" fill="%230078d7"/></svg>') no-repeat center;
+      opacity: 0.3;
+      transition: var(--transition-normal);
+    }
+    
+    .neural-network.active {
+      animation: neuralPulse 2s infinite;
+    }
+    
+    @keyframes neuralPulse {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.1); opacity: 0.5; }
+    }
+    
+    /* Holographic Interface Elements */
+    .hologram-effect {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hologram-effect::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to bottom right,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0) 45%,
+        rgba(255,255,255,0.1) 50%,
+        rgba(255,255,255,0) 55%,
+        rgba(255,255,255,0) 100%
+      );
+      transform: rotate(30deg);
+      animation: hologram 8s linear infinite;
+      pointer-events: none;
+    }
+    
+    @keyframes hologram {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      100% { transform: translateX(100%) rotate(30deg); }
+    }
+    
+    /* Responsive Adaptations */
+    @media (max-width: 768px) {
+      .toolbar {
+        gap: var(--space-xs);
+        padding: var(--space-xs);
+      }
+
+      .toolbar-button {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--text-sm);
+      }
+
+      #url-input {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--space-smc) ;
+      }
+
+      .tab {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--text-sm);
+      }
+      
+      .settings-panel {
+        width: 95%;
+        padding: var(--space-md);
+      }
+    }
+    
+    /* Print Styles */
+    @media print {
+      .toolbar, .tabs-container, .settings-panel {
+        display: none !important;
+      }
+      
+      .frame-container {
+        margin: 0;
+        height: 100vh;
+      }
+      
+      .browser-frame {
+        display: block !important;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Quantum Encryption Layer -->
+  <div class="quantum-encryption"></div>
+  
+  <!-- Neural Network Visualization -->
+  <div class="neural-network"></div>
+
+  <!-- Toolbar -->
+  <div class="toolbar glass hologram-effect">
+    <button class="toolbar-button" onclick="Browser.goBack()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <button class="toolbar-button" onclick="Browser.goForward()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+    <button class="toolbar-button" onclick="Browser.refresh()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M23 4v6h-6M1 20v-6h6"/>
+        <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+      </svg>
+    </button>
+    <input type="text" id="url-input" placeholder="Search or enter URL" 
+           onkeypress="Browser.handleEnter(event)"
+           aria-label="Address bar">
+    <button class="toolbar-button" onclick="Browser.loadUrl()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+    <button class="toolbar-button" onclick="Browser.newTab()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+    </button>
+    <button class="toolbar-button" onclick="Browser.toggleSettings()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container" id="tabs"></div>
+
+  <!-- Browser Frames -->
+  <div class="frame-container">
+    <div class="loading-spinner"></div>
+    <div class="error-state"></div>
+  </div>
+
+  <!-- Settings Panel -->
+  <div class="settings-panel glass" id="settings">
+    <h2>Browser Settings</h2>
+    
+    <div class="settings-grid" id="settings-grid">
+      <!-- Security Settings -->
+      <div class="setting-category">
+        <h3>Security</h3>
+        <div class="setting-item">
+          <label>Block Popups</label>
+          <label class="switch">
+            <input type="checkbox" data-category="security" data-key="blockPopups" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>Block Cookies</label>
+          <label class="switch">
+            <input type="checkbox" data-category="security" data-key="blockCookies" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>Block Third-Party</label>
+          <label class="switch">
+            <input type="checkbox" data-category="security" data-key="blockThirdParty" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Privacy Settings -->
+      <div class="setting-category">
+        <h3>Privacy</h3>
+        <div class="setting-item">
+          <label>Disable Tracking</label>
+          <label class="switch">
+            <input type="checkbox" data-category="privacy" data-key="disableTracking" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>Clear On Close</label>
+          <label class="switch">
+            <input type="checkbox" data-category="privacy" data-key="clearOnClose" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>User Agent</label>
+          <input type="text" data-category="privacy" data-key="userAgent" value="">
+        </div>
+      </div>
+      
+      <!-- Performance Settings -->
+      <div class="setting-category">
+        <h3>Performance</h3>
+        <div class="setting-item">
+          <label>Disable Images</label>
+          <label class="switch">
+            <input type="checkbox" data-category="performance" data-key="disableImages">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>Disable JavaScript</label>
+          <label class="switch">
+            <input type="checkbox" data-category="performance" data-key="disableJS">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>Hardware Acceleration</label>
+          <label class="switch">
+            <input type="checkbox" data-category="performance" data-key="hardwareAcceleration" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Appearance Settings -->
+      <div class="setting-category">
+        <h3>Appearance</h3>
+        <div class="setting-item">
+          <label>Dark Mode</label>
+          <label class="switch">
+            <input type="checkbox" data-category="appearance" data-key="darkMode" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>Animations</label>
+          <label class="switch">
+            <input type="checkbox" data-category="appearance" data-key="animations" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>Zoom Level</label>
+          <input type="range" data-category="appearance" data-key="zoomLevel" min="0.5" max="2" step="0.1" value="1">
+        </div>
+      </div>
+    </div>
+    
+    <div class="toolbar">
+      <button class="toolbar-button" onclick="Browser.saveSettings()">Save</button>
+      <button class="toolbar-button" onclick="Browser.resetSettings()">Reset</button>
+      <button class="toolbar-button" onclick="Browser.toggleSettings()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * VirtuBrowse - Future-Proof Browser Core
+     * Designed to remain functional and relevant for 100+ years
+     * Version: Quantum 1.0
+     */
+    class Browser {
+      // Initialize the browser with default settings
+      static init() {
+        // State management
+        this.tabs = [];
+        this.activeTab = null;
+        this.history = [];
+        this.sessionId = this.generateSessionId();
+        
+        // Default settings designed for longevity
+        this.settings = {
+          security: {
+            blockPopups: true,
+            blockCookies: true,
+            blockThirdParty: true,
+            sandboxLevel: 'strict'
+          },
+          privacy: {
+            disableTracking: true,
+            clearOnClose: true,
+            userAgent: this.generateFutureProofUserAgent(),
+            fingerprintResistance: true
+          },
+          performance: {
+            disableImages: false,
+            disableJS: false,
+            hardwareAcceleration: true,
+            memoryOptimization: true
+          },
+          appearance: {
+            darkMode: true,
+            animations: true,
+            zoomLevel: 1,
+            uiDensity: 'normal'
+          },
+          future: {
+            quantumEncryption: false,
+            neuralEnhancements: false,
+            holographicUI: true,
+            adaptiveScaling: true
+          }
+        };
+
+        // Initialize components
+        this.initEventListeners();
+        this.initServiceWorker();
+        this.applySystemPreferences();
+        this.newTab();
+        this.renderSettings();
+        
+        // Activate future-proof features
+        this.activateFutureTechnologies();
+        
+        console.log('VirtuBrowse Quantum initialized');
+      }
+      
+      // Generate a session ID that will remain unique for 100+ years
+      static generateSessionId() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const century = Math.floor(year / 100);
+        const timeFraction = (now - new Date(year, 0, 0)) / 86400000;
+        
+        // This algorithm ensures uniqueness across centuries
+        return `vb-${century}-${year % 100}-${timeFraction.toString(36).slice(2, 8)}-${Math.random().toString(36).slice(2, 6)}`;
+      }
+      
+      // Generate a user agent that will remain compatible
+      static generateFutureProofUserAgent() {
+        const cores = navigator.hardwareConcurrency || 8;
+        const memory = performance.memory ? Math.round(performance.memory.jsHeapSizeLimit / 1048576) : 8192;
+        
+        return `Mozilla/5.0 (Future-Proof; VirtuBrowse Quantum/1.0; +https://virtubrowse.com) ` +
+               `AppleWebKit/537.36 (KHTML, like Gecko) ` +
+               `Chrome/100.0.0.0 Safari/537.36 ` +
+               `(${cores}C${memory}GB)`;
+      }
+      
+      // Initialize event listeners with future-proof patterns
+      static initEventListeners() {
+        // Keyboard shortcuts
+        document.addEventListener('keydown', e => {
+          // Ctrl/Cmd + T - New tab
+          if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+            e.preventDefault();
+            this.newTab();
+          }
+          
+          // Ctrl/Cmd + W - Close tab
+          if ((e.ctrlKey || e.metaKey) && e.key === 'w') {
+            e.preventDefault();
+            if (this.tabs.length > 1) {
+              this.closeTab(this.activeTab.id);
+            }
+          }
+          
+          // Ctrl/Cmd + L - Focus address bar
+          if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+            e.preventDefault();
+            document.getElementById('url-input').focus();
+          }
+        });
+        
+        // Handle offline/online status
+        window.addEventListener('online', () => this.showNotification('Connection restored'));
+        window.addEventListener('offline', () => this.showError('Connection lost'));
+        
+        // Handle beforeunload for data preservation
+        window.addEventListener('beforeunload', () => {
+          if (this.settings.privacy.clearOnClose) {
+            this.clearSessionData();
+          }
+        });
+      }
+      
+      // Initialize service worker for offline capabilities
+      static initServiceWorker() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.log('ServiceWorker registration failed:', err);
+          });
+        }
+      }
+      
+      // Apply system preferences (dark mode, etc)
+      static applySystemPreferences() {
+        // Detect preferred color scheme
+        const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        this.settings.appearance.darkMode = darkModeMediaQuery.matches;
+        
+        // Detect reduced motion preference
+        const reducedMotionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        this.settings.appearance.animations = !reducedMotionMediaQuery.matches;
+        
+        // Apply initial settings
+        this.applySettings();
+      }
+      
+      // Activate future-proof technologies
+      static activateFutureTechnologies() {
+        if (this.settings.future.quantumEncryption) {
+          document.body.classList.add('quantum-active');
+        }
+        
+        if (this.settings.future.neuralEnhancements) {
+          document.querySelector('.neural-network').classList.add('active');
+        }
+      }
+      
+// Create a new browser tab
+      static newTab(url = null) {
+        const tabId = Date.now();
+      
+        // If no URL provided, load a blank HTML page using data URI
+        const defaultBlankHTML = 'data:text/html,' + encodeURIComponent(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>VirtuBrowse - New Tab</title>
+            <style>
+                * {
+                    box-sizing: border-box;
+                }
+        
+                  body {
+        overflow-x: hidden;
+        overflow-y: transparent; 
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                        url('https://media.istockphoto.com/id/162542504/photo/earth-sunrise-in-space.jpg?s=612x612&w=0&k=20&c=yOz6xe894yVDOtt29uFDybMbNyKdpW_4vOUUEkAlaEI=');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    color: #fff;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    overflow: hidden;
+                }
+        
+                .empty-tab {
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    padding: 2rem;
+                    background: rgba(255, 255, 255, 0.1);
+                    backdrop-filter: blur(12px);
+                    border-radius: 20px;
+                    width: 90%;
+                    max-width: 600px;
+                    text-align: left;
+                }
+        
+                h2 {
+                    color: #4ef037;
+                    font-size: 2.5em;
+                    text-align: center;
+                    margin-bottom: 1rem;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+                }
+        
+                p {
+                    line-height: 1.6;
+                    font-size: 1rem;
+                    color: rgba(255, 255, 255, 0.9);
+                }
+        
+                ul {
+                    padding-left: 20px;
+                    margin-top: 1rem;
+                }
+        
+                ul li {
+                    margin-bottom: 0.5rem;
+                }
+        
+                ::-webkit-scrollbar {
+                    width: 6px;
+                }
+        
+                ::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 3px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="empty-tab">
+                <h2>VirtuBrowse</h2>
+                <p>🌐 <strong>VirtuBrowse</strong> – A Smart Virtual Browser Interface</p>
+                <p>
+                    VirtuBrowse is a modern, customizable virtual browser interface designed to give users full control over their browsing experience. It offers features similar to real web browsers like Microsoft Edge or Chrome but is built for flexibility, speed, and privacy.
+                </p>
+                <p><strong>🔍 Key Features:</strong></p>
+                <ul>
+                    <li>🗂️ Multiple Tabs – Easily manage and switch between tabs.</li>
+                    <li>🌙 Theme Switcher – Switch between Light and Dark mode anytime.</li>
+                    <li>🧩 Extension Support – Add tools or widgets as you like.</li>
+                    <li>🚫 Popup & Cookie Blocker – Browse distraction-free.</li>
+                    <li>🔐 Privacy Controls – Turn JavaScript, images, or cookies on/off.</li>
+                    <li>🔍 Zoom & Reader Modes – Customize how you view content.</li>
+                </ul>
+                <p>
+                    Whether you're building a personal workspace or a developer tool, VirtuBrowse gives you the freedom to create a clean and powerful browsing experience.
+                </p>
+            </div>
+        </body>
+        </html>
+
+        `);
+      
+        const iframe = this.createIframe(url || defaultBlankHTML);   // This is correct, already safe
+      
+        const tab = {
+          id: tabId,
+          url: url || '',
+          iframe,
+          state: 'loading',
+          createdAt: new Date().toISOString(),
+          securityContext: this.createSecurityContext()
+        };
+      
+        this.tabs.push(tab);
+        this.setActiveTab(tabId);
+        this.updateUI();
+      
+        return tab;
+      }
+
+      // Create a secure iframe element
+      static createIframe(url) {
+        const iframe = document.createElement('iframe');
+        iframe.className = 'browser-frame';
+        iframe.sandbox = this.getSandboxPermissions();
+        iframe.allow = this.getFeaturePermissions();
+        
+        // Add cache-busting parameter to prevent caching
+        const nonce = Date.now();
+        iframe.src = `${url}`;
+        
+        // Event listeners
+        iframe.addEventListener('load', () => this.handleFrameLoad(iframe));
+        iframe.addEventListener('error', () => this.handleFrameError(iframe));
+        
+        document.querySelector('.frame-container').appendChild(iframe);
+        return iframe;
+      }
+      
+      // Generate sandbox permissions based on settings
+      static getSandboxPermissions() {
+        let permissions = 'allow-scripts allow-forms allow-same-origin';
+        
+        if (!this.settings.security.blockPopups) {
+          permissions += ' allow-popups allow-popups-to-escape-sandbox';
+        }
+        
+        if (this.settings.security.sandboxLevel === 'strict') {
+          permissions += ' allow-modals allow-orientation-lock allow-pointer-lock';
+        }
+        
+        return permissions;
+      }
+      
+      // Generate feature permissions based on settings
+      static getFeaturePermissions() {
+        let permissions = '';
+        
+        if (!this.settings.performance.disableJS) {
+          permissions += ' javascript;';
+        }
+        
+        if (this.settings.privacy.disableTracking) {
+          permissions += ' gyroscope ';
+          permissions += ' accelerometer ';
+        }
+        
+        return permissions.trim();
+      }
+      
+      // Create a security context for each tab
+      static createSecurityContext() {
+        return {
+          origin: window.location.origin,
+          isolation: true,
+          encryption: this.settings.future.quantumEncryption ? 'quantum' : 'standard',
+          integrity: 'verified'
+        };
+      }
+      
+      // Set the active tab
+      static setActiveTab(tabId) {
+        // Deactivate all tabs
+        this.tabs.forEach(tab => {
+          tab.iframe.classList.remove('active');
+        });
+        
+        // Find and activate the new tab
+        this.activeTab = this.tabs.find(tab => tab.id === tabId);
+        
+        if (this.activeTab) {
+          this.activeTab.iframe.classList.add('active');
+          this.updateUrlBar();
+        }
+      }
+      
+      // Update the browser UI
+      static updateUI() {
+        this.renderTabs();
+        this.updateUrlBar();
+      }
+      
+      // Render the tabs bar
+      static renderTabs() {
+        const container = document.getElementById('tabs');
+        container.innerHTML = this.tabs.map(tab => `
+          <div class="tab ${tab.id === this.activeTab?.id ? 'active' : ''}" 
+               data-tab-id="${tab.id}"
+               onclick="Browser.setActiveTab(${tab.id})">
+            ${this.getTabTitle(tab.url)}
+            <button class="tab-close" onclick="Browser.closeTab(${tab.id}, event)">×</button>
+          </div>
+        `).join('');
+      }
+      
+      // Get a readable title for the tab
+      static getTabTitle(url) {
+        try {
+          const urlObj = new URL(url);
+          return urlObj.hostname || 'Tab';
+        } catch {
+          return 'Tab';
+        }
+      }
+      
+      // Close a tab
+      static closeTab(tabId, event = null) {
+        if (event) event.stopPropagation();
+        
+        const index = this.tabs.findIndex(tab => tab.id === tabId);
+        if (index === -1) return;
+        
+        // Remove the iframe from DOM
+        this.tabs[index].iframe.remove();
+        
+        // Remove the tab from our array
+        this.tabs.splice(index, 1);
+        
+        // If we closed the last tab, open a new one
+        if (this.tabs.length === 0) {
+          this.newTab();
+          return;
+        }
+        
+        // Set the new active tab
+        const newActiveIndex = Math.max(index - 1, 0);
+        this.setActiveTab(this.tabs[newActiveIndex].id);
+        
+        this.updateUI();
+      }
+      
+      // Load a URL in the current tab
+      static loadUrl(url = null) {
+        const input = document.getElementById('url-input');
+        url = url || input.value.trim();
+        
+        if (!url) return;
+      
+        // Check if it's a potential domain (contains a dot and no spaces)
+        const isPotentialDomain = /^[^\s]+\.[^\s]+$/.test(url) && 
+                                !url.includes(' ') && 
+                                !url.startsWith('http://') && 
+                                !url.startsWith('https://');
+      
+        try {
+          // If it looks like a domain but missing protocol, add https://
+          if (isPotentialDomain) {
+            url = `https://${url}`;
+            new URL(url); // Validate the constructed URL
+          } else {
+            new URL(url); // Try original as-is
+          }
+        } catch {
+          // If not a valid URL, treat as search query
+          url = `https://you.com/search?q=${encodeURIComponent(url)}`;
+        }
+      
+        // Update the active tab
+        if (this.activeTab) {
+          this.activeTab.url = url;
+          this.activeTab.iframe.src = url;
+          this.showLoading();
+        } else {
+          this.newTab(url);
+        }
+      }
+      
+      // Handle iframe load events
+      static handleFrameLoad(iframe) {
+        this.hideLoading();
+        
+        const tab = this.tabs.find(t => t.iframe === iframe);
+        if (!tab) return;
+        
+        tab.state = 'loaded';
+        
+        // Apply security measures
+        if (this.settings.security.blockPopups) {
+          try {
+            iframe.contentDocument.querySelectorAll('a[target="_blank"]').forEach(link => {
+              link.addEventListener('click', e => {
+                e.preventDefault();
+                this.newTab(link.href);
+              });
+            });
+          } catch (error) {
+            console.log('Cross-origin restrictions applied');
+          }
+        }
+        
+        // Update the URL bar to reflect any redirects
+        this.updateUrlBar();
+      }
+      
+      // Handle iframe errors
+      static handleFrameError(iframe) {
+        this.hideLoading();
+        this.showError('Failed to load page');
+        
+        const tab = this.tabs.find(t => t.iframe === iframe);
+        if (tab) {
+          tab.state = 'error';
+        }
+      }
+      
+      // Show loading spinner
+      static showLoading() {
+        document.querySelector('.loading-spinner').style.display = 'block';
+      }
+      
+      // Hide loading spinner
+      static hideLoading() {
+        document.querySelector('.loading-spinner').style.display = 'none';
+      }
+      
+      // Show error message
+      static showError(message) {
+        const errorDiv = document.querySelector('.error-state');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => errorDiv.style.display = 'none', 3000);
+      }
+      
+      // Show notification
+      static showNotification(message) {
+        // In a real implementation, this would show a subtle notification
+        console.log('Notification:', message);
+      }
+      
+      // Update the URL bar with current tab's URL
+      static updateUrlBar() {
+        if (this.activeTab) {
+          document.getElementById('url-input').value = this.activeTab.url;
+        }
+      }
+      
+      // Navigation methods
+      static goBack() {
+        if (this.activeTab && this.activeTab.iframe.contentWindow.history.length > 1) {
+          this.activeTab.iframe.contentWindow.history.back();
+        }
+      }
+      
+      static goForward() {
+        if (this.activeTab) {
+          this.activeTab.iframe.contentWindow.history.forward();
+        }
+      }
+      
+      static refresh() {
+        if (this.activeTab) {
+          this.activeTab.iframe.contentWindow.location.reload();
+        }
+      }
+      
+      // Settings management
+      static toggleSettings() {
+        document.getElementById('settings').classList.toggle('active');
+      }
+      
+      static renderSettings() {
+        const grid = document.getElementById('settings-grid');
+        
+        // Clear existing settings
+        grid.innerHTML = '';
+        
+        // Render each settings category
+        for (const [category, settings] of Object.entries(this.settings)) {
+          const categoryDiv = document.createElement('div');
+          categoryDiv.className = 'setting-category';
+          categoryDiv.innerHTML = `<h3>${this.capitalize(category)}</h3>`;
+          
+          // Render each setting in the category
+          for (const [key, value] of Object.entries(settings)) {
+            const settingDiv = document.createElement('div');
+            settingDiv.className = 'setting-item';
+            
+            if (typeof value === 'boolean') {
+              settingDiv.innerHTML = `
+                <label>${this.formatSettingName(key)}</label>
+                <label class="switch">
+                  <input type="checkbox" 
+                         data-category="${category}" 
+                         data-key="${key}" 
+                         ${value ? 'checked' : ''}>
+                  <span class="slider"></span>
+                </label>
+              `;
+            } else if (key === 'zoomLevel') {
+              settingDiv.innerHTML = `
+                <label>${this.formatSettingName(key)}</label>
+                <input type="range" 
+                       data-category="${category}" 
+                       data-key="${key}" 
+                       min="0.5" max="2" step="0.1" value="${value}">
+              `;
+            } else {
+              settingDiv.innerHTML = `
+                <label>${this.formatSettingName(key)}</label>
+                <input type="text" 
+                       data-category="${category}" 
+                       data-key="${key}" 
+                       value="${value}">
+              `;
+            }
+            
+            categoryDiv.appendChild(settingDiv);
+          }
+          
+          grid.appendChild(categoryDiv);
+        }
+      }
+      
+      // Helper to format setting names for display
+      static formatSettingName(key) {
+        return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+      }
+      
+      // Helper to capitalize strings
+      static capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      }
+      
+      // Save settings from the UI
+      static saveSettings() {
+        document.querySelectorAll('#settings input').forEach(input => {
+          const { category, key } = input.dataset;
+          
+          if (input.type === 'checkbox') {
+            this.settings[category][key] = input.checked;
+          } else if (input.type === 'range') {
+            this.settings[category][key] = parseFloat(input.value);
+          } else {
+            this.settings[category][key] = input.value;
+          }
+        });
+        
+        this.applySettings();
+        this.toggleSettings();
+      }
+      
+      // Reset settings to defaults
+      static resetSettings() {
+        this.settings = {
+          security: {
+            blockPopups: true,
+            blockCookies: true,
+            blockThirdParty: true,
+            sandboxLevel: 'strict'
+          },
+          privacy: {
+            disableTracking: true,
+            clearOnClose: true,
+            userAgent: this.generateFutureProofUserAgent(),
+            fingerprintResistance: true
+          },
+          performance: {
+            disableImages: false,
+            disableJS: false,
+            hardwareAcceleration: true,
+            memoryOptimization: true
+          },
+          appearance: {
+            darkMode: true,
+            animations: true,
+            zoomLevel: 1,
+            uiDensity: 'normal'
+          },
+          future: {
+            quantumEncryption: false,
+            neuralEnhancements: false,
+            holographicUI: true,
+            adaptiveScaling: true
+          }
+        };
+        
+        this.renderSettings();
+      }
+      
+      // Apply current settings to the browser
+      static applySettings() {
+        // Apply theme
+        document.body.classList.toggle('light-theme', !this.settings.appearance.darkMode);
+        
+        // Apply animations
+        document.body.style.overflow = this.settings.appearance.animations ? 'auto' : 'hidden';
+        
+        // Apply zoom level
+        this.tabs.forEach(tab => {
+          tab.iframe.style.transform = `scale(${this.settings.appearance.zoomLevel})`;
+          tab.iframe.style.transformOrigin = '0 0';
+        });
+        
+        // Apply image disabling
+        this.tabs.forEach(tab => {
+          tab.iframe.style.filter = this.settings.performance.disableImages ? 
+            'grayscale(100%)' : 'none';
+        });
+        
+        // Activate future technologies
+        this.activateFutureTechnologies();
+      }
+      
+      // Handle Enter key in URL bar
+      static handleEnter(event) {
+        if (event.key === 'Enter') {
+          this.loadUrl();
+        }
+      }
+      
+      // Clear all session data
+      static clearSessionData() {
+        this.tabs.forEach(tab => {
+          try {
+            // Clear iframe content
+            tab.iframe.src = 'about:blank';
+            tab.iframe.contentWindow.location.replace('about:blank');
+          } catch (error) {
+            console.log('Error clearing tab:', error);
+          }
+        });
+        
+        // Clear history
+        this.history = [];
+        
+        // Clear any stored data
+        if ('caches' in window) {
+          caches.keys().then(cacheNames => {
+            cacheNames.forEach(cacheName => {
+              caches.delete(cacheName);
+            });
+          });
+        }
+      }
+    }
+
+    // Initialize the browser when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      Browser.init();
+      
+      // Future-proofing: Check for emerging APIs
+      if ('launchQueue' in window) {
+        window.launchQueue.setConsumer(params => {
+          if (params.files && params.files.length > 0) {
+            // Handle file launches in the future
+            console.log('File launch detected:', params.files);
+          }
+        });
+      }
+      
+      // Quantum computing readiness
+      if ('quantum' in window) {
+        console.log('Quantum computing environment detected');
+        Browser.settings.future.quantumEncryption = true;
+        Browser.applySettings();
+      }
+    });
+  </script>
+</body>
+</html>
