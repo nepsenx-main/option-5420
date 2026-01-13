@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <!-- Load Tailwind CSS CDN -->
+    <script src="./src/tw.js"></script>
+    <link rel="stylesheet" href="./src/universal.css" />
+    <link rel="stylesheet" href="./src/universal.css" />
+    <!-- Load Lucide Icons for a modern, minimal look -->
+    <script src="./src/lucide.min.js"></script>
+
+    <!-- Configure Tailwind for custom shadows -->
+    <script>
+      tailwind.config = {
+        darkMode: "class", // Enable dark mode based on 'dark' class on <html> or <body>
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            boxShadow: {
+              // Soft inset shadow for buttons on glass background
+              "soft-inset":
+                "inset 2px 2px 4px rgba(0, 0, 0, 0.1), inset -2px -2px 4px rgba(255, 255, 255, 0.2)",
+              "dark-soft-inset":
+                "inset 2px 2px 4px rgba(0, 0, 0, 0.4), inset -2px -2px 4px rgba(70, 70, 70, 0.4)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Global Styles */
+      body {
+        overflow-x: hidden;
+        overflow-y: transparent;
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .clickable-neo:hover {
+        cursor: pointer;
+        transform: translateY(-1px);
+      }
+
+      /* --- Glassmorphism Effect --- */
+      .glass-effect {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        background-color: rgba(
+          255,
+          255,
+          255,
+          0.15
+        ); /* Light translucent white */
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+      .dark .glass-effect {
+        background-color: rgba(30, 41, 59, 0.4); /* Dark translucent gray */
+        border: 1px solid rgba(40, 50, 70, 0.5);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      }
+
+      /* --- Page & Iframe Sizing (Full Viewport Coverage) --- */
+      html,
+      body {
+        overflow-x: hidden;
+        overflow-y: transparent;
+        height: 100%;
+        width: 100%;
+      }
+      .app-page {
+        width: 100%;
+        height: 100%;
+      }
+      .page-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background-color: transparent;
+      }
+
+      /* Ensures the whole logo and context switcher area is visible on top */
+      .context-switcher-panel {
+        /* The element that holds the context logo/name/chevron */
+        min-width: fit-content; /* Allow content to dictate minimum width */
+      }
+      @media (max-width: 1068px) {
+        #search-bar-container {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Header Container: Top Bar (Sections 1 and 3) -->
+    <header
+      class="fixed top-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[1400px] flex justify-between items-center space-x-2 md:space-x-6 pb-2 md:pb-6 z-20"
+    >
+      <!-- 1. Left Group: Context Switcher and Search Bar (NOW COMBINED INTO A SINGLE GLASS PANEL) -->
+      <div
+        id="left-panel-container"
+        class="flex items-center space-x-2 md:space-x-4 p-2 pl-4 rounded-3xl relative glass-effect transition-all duration-300 flex-shrink-0"
+      >
+        <!-- A. Context Switcher Button Area (Clickable to open menu/show context) -->
+        <div
+          id="context-switcher-btn"
+          onclick="toggleContextSwitcher()"
+          class="flex items-center space-x-2 cursor-pointer clickable-neo flex-shrink-0 context-switcher-panel"
+        >
+          <!-- Logo/Text Group -->
+          <div class="flex items-center space-x-2">
+            <!-- Logo Image/Placeholder (Dynamically loaded) -->
+            <div
+              id="logo-image-container"
+              class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md"
+            >
+              <!-- Placeholder will be replaced by <img> or SVG tag in JS -->
+            </div>
+            <span
+              id="current-app-name"
+              class="text-gray-700 dark:text-gray-200 font-semibold tracking-wide transition-colors duration-300 whitespace-nowrap"
+            ></span>
+          </div>
+
+          <!-- Chevron Indicator -->
+          <i
+            data-lucide="chevron-down"
+            id="context-chevron"
+            class="w-5 h-5 text-blue-500 transition-transform duration-300 flex-shrink-0"
+          ></i>
+        </div>
+
+        <!-- B. Search Bar (Now integrated next to the context button inside the main glass panel) -->
+        <!-- The search bar starts hidden. Visibility is controlled by JS. -->
+        <div
+          id="search-bar-container"
+          class="transition-opacity duration-300 flex items-center space-x-2 hidden"
+        >
+          <!-- Input field with contrast styling and reduced size (w-32/w-40 and smaller padding) -->
+          <input
+            type="text"
+            id="iframe-search-input"
+            placeholder="Search..."
+            class="bg-gray-100/70 dark:bg-gray-800/70 text-gray-800 dark:text-gray-100 px-2 py-1 text-sm rounded-xl focus:outline-none placeholder-gray-500/70 dark:placeholder-gray-400/70 border border-transparent focus:border-blue-400 transition-all duration-200 w-32 md:w-40 flex-shrink min-w-0"
+          />
+
+          <button
+            id="iframe-search-button"
+            class="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center justify-center shadow-md flex-shrink-0 clickable-neo"
+          >
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- C. CONTEXT SWITCHER DROPDOWN MENU (Positioned relative to #left-panel-container) -->
+        <div
+          id="context-switcher-menu"
+          class="hidden absolute top-full left-0 mt-2 w-full min-w-[12rem] z-30 p-2 rounded-xl glass-effect transition-opacity duration-300 shadow-xl"
+        >
+          <!-- Content generated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- 2. Center Section: Main Navigation (Desktop/Tablet Only) -->
+      <div
+        class="flex-grow flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-4 mx-4 hidden md:flex"
+      >
+        <!-- Main Navigation (Original #desktop-nav) -->
+        <nav
+          id="desktop-nav"
+          class="flex items-center p-2 rounded-3xl glass-effect space-x-3 transition-all duration-300 flex-shrink-0"
+        >
+          <!-- Content generated by JavaScript -->
+        </nav>
+      </div>
+
+      <!-- 3. Right Section: User Controls/Actions (Visible on all sizes) -->
+      <div
+        class="flex items-center p-2 rounded-3xl glass-effect space-x-2 transition-all duration-300 flex-shrink-0"
+      >
+        <!-- 1. Settings Button -->
+        <button
+          data-page-id="settings"
+          id="btn-settings"
+          class="nav-button flex items-center justify-center w-12 h-12 rounded-full text-gray-700 dark:text-gray-300 hover:text-blue-500 hover:shadow-soft-inset dark:hover:shadow-dark-soft-inset transition-all duration-300"
+        >
+          <i data-lucide="settings" class="w-5 h-5"></i>
+        </button>
+
+        <!-- 2. THEME TOGGLE BUTTON -->
+        <button
+          id="theme-toggle"
+          onclick="toggleTheme()"
+          class="flex items-center justify-center w-12 h-12 rounded-full text-gray-700 dark:text-gray-300 hover:text-blue-500 hover:shadow-soft-inset dark:hover:shadow-dark-soft-inset transition-all duration-300"
+        >
+          <i data-lucide="sun" id="theme-icon" class="w-5 h-5"></i>
+        </button>
+
+        <!-- 3. User Profile Icon Button: Defaults to user-circle, fulfilling the requirement. -->
+        <button
+          data-page-id="profile"
+          id="btn-profile"
+          class="nav-button flex items-center justify-center w-12 h-12 rounded-full text-gray-700 dark:text-gray-300 hover:text-blue-500 hover:shadow-soft-inset dark:hover:shadow-dark-soft-inset transition-all duration-300"
+        >
+          <i data-lucide="user-circle" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. Center Section: Main Navigation (Mobile Only) - Fixed to the bottom (Dynamically populated) -->
+    <nav
+      id="mobile-nav"
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm md:hidden flex items-center p-2 rounded-3xl glass-effect space-x-3 justify-around z-30 transition-all duration-300"
+    >
+      <!-- Content generated by JavaScript -->
+    </nav>
+
+    <!-- Page Content Container: Covers 100% of the viewport and sits behind the header (z-index 10) -->
+    <main class="fixed top-0 left-0 w-screen h-screen z-10">
+      <!-- All page sections are defined here. They will contain the iframes. -->
+      <section id="home" class="app-page"></section>
+      <section id="games" class="app-page hidden"></section>
+      <section id="clan" class="app-page hidden"></section>
+      <section id="about" class="app-page hidden"></section>
+      <section id="settings" class="app-page hidden"></section>
+      <section id="profile" class="app-page hidden"></section>
+    </main>
+
+    <!-- --- SCRIPT LOGIC --- -->
+
+    <script>
+      // --- CONSTANTS: APP CONFIGURATION ---
+      const appConfig = {
+        // --- THEME CONFIGURATION ---
+        themeConfig: {
+          // Options: 'light', 'dark', 'system', or 'default' (which falls back to local/system)
+          // If set to 'light' or 'dark' or 'system', it overrides the visual appearance
+          // globally, unless a specific page has its own 'theme' property.
+          forcedOverride: "default",
+        },
+
+        logo: {
+          text: "CG ",
+          imageUrl: "./src/th-removebg-preview__3_-removebg-preview%20(1).png",
+          name: "CG ",
+          profileIconUrl: "",
+        },
+        // <i data-lucide="joystick" class="w-6 h-6"></i>       <!-- Joystick icon -->
+        // <i data-lucide="play" class="w-6 h-6"></i>          <!-- Play button -->
+        // <i data-lucide="pause" class="w-6 h-6"></i>         <!-- Pause button -->
+        // <i data-lucide="trophy" class="w-6 h-6"></i>        <!-- Trophy/achievement -->
+        // <i data-lucide="crown" class="w-6 h-6"></i>         <!-- Crown/leaderboard -->
+        // <i data-lucide="users" class="w-6 h-6"></i>         <!-- Multiplayer/team -->
+        // <i data-lucide="sword" class="w-6 h-6"></i>         <!-- Sword for combat games -->
+        // <i data-lucide="target" class="w-6 h-6"></i>        <!-- Target for shooting games -->
+        // <i data-lucide="dice-5" class="w-6 h-6"></i>        <!-- Dice for board games -->
+        // <i data-lucide="puzzle" class="w-6 h-6"></i>        <!-- Puzzle for puzzle games -->
+        // Contexts/Webnames
+        contexts: [
+          {
+            id: "home",
+            name: "Home",
+            icon: "./src/th-removebg-preview__3_-removebg-preview%20(1).png",
+            color: "blue",
+            isExternal: true,
+            url: "https://nepsenx.byethost7.com/?i=1",
+          },
+          {
+            id: "NeoDot",
+            name: "NeoDot",
+            icon: "./src/Screenshot_2025-04-12_175711-Photoroom-fotor-20250412183519-removebg-preview.png",
+            color: "blue",
+            isExternal: true,
+            url: "https://neodot.22web.org/",
+          },
+          {
+            id: "Adupter",
+            name: "Adupter",
+            icon: "./src/Web_Photo_Editor_3_-removebg-preview(2).png",
+            color: "blue",
+            isExternal: true,
+            url: "https://nepsenx.byethost7.com/?i=1",
+          },
+          {
+            id: "OpenA",
+            name: "OpenA",
+            icon: "./src/Copilot_20250724_112130_1_-removebg-preview.png",
+            color: "blue",
+            isExternal: true,
+            url: "https://www.bing.com/search?q=OpenA",
+          },
+          {
+            id: "Basikno",
+            name: "Basikno",
+            icon: "./src/th-removebg-preview__3_-removebg-preview%20(1).png",
+            color: "blue",
+            isExternal: true,
+            url: "https://nepsenx.byethost7.com/?i=1",
+          },
+          {
+            id: "Ishahi",
+            name: "Ishahi",
+            icon: "./src/th-removebg-preview__3_-removebg-preview%20(1).png",
+            color: "blue",
+            isExternal: true,
+            url: "https://ishahi.22web.org/?i=1",
+          },
+          {
+            id: "VirtuBrowse",
+            name: "VirtuBrowse",
+            icon: "./src/th-removebg-preview__3_-removebg-preview%20(1).png",
+            color: "blue",
+            isExternal: true,
+            url: "https://vb.22web.org/?i=1",
+          },
+        ],
+
+        // Main Navigation Links
+        // You can now add property: theme: 'dark' | 'light' | 'default' to any link
+        navLinks: [
+          {
+            id: "home",
+            icon: "home",
+            title: "Home",
+            isDefault: true,
+            desktopOnly: false,
+            url: "home.html",
+            isSearchable: false,
+            theme: "default",
+          },
+          {
+            id: "games",
+            icon: "gamepad-2",
+            title: "Games",
+            desktopOnly: false,
+            url: "games.html",
+            isSearchable: true,
+            theme: "default",
+          },
+          {
+            id: "clan",
+            icon: "flag",
+            title: "Clan",
+            desktopOnly: false,
+            url: "clan.html",
+            isSearchable: true,
+            theme: "default",
+          },
+          {
+            id: "about",
+            icon: "info",
+            title: "About",
+            desktopOnly: false,
+            url: "https://nepsenx.blogger.com?search=What+is+CG",
+            isSearchable: false,
+            theme: "light",
+          },
+        ],
+
+        // Utility Links
+        utilityLinks: [
+          {
+            id: "settings",
+            icon: "settings",
+            title: "Settings",
+            url: "https://www.google.com/search?q=software+settings+dashboard+example",
+            isSearchable: true,
+          },
+          {
+            id: "profile",
+            icon: "user-circle",
+            title: "Profile",
+            url: "https://www.google.com/search?q=user+profile+dashboard+example",
+            isSearchable: false,
+          },
+          {
+            id: "404-error-page",
+            icon: "alert-triangle",
+            title: "Page Not Found",
+            url: " ./iframe/404!.html",
+            isHidden: true,
+            isSearchable: false,
+          },
+        ],
+      };
+
+      // --- CORE STATE & ELEMENTS ---
+      const body = document.body;
+      const contextMenu = document.getElementById("context-switcher-menu");
+      const contextChevron = document.getElementById("context-chevron");
+      const contextSwitcherBtn = document.getElementById(
+        "context-switcher-btn"
+      );
+      const currentAppNameSpan = document.getElementById("current-app-name");
+
+      const defaultContext =
+        appConfig.contexts.find((c) => !c.isExternal) || appConfig.contexts[0];
+      let currentAppContextId = defaultContext.id;
+      let currentActivePageId = "home"; // Track the active page for theme logic
+
+      /**
+       * --- THEME LOGIC ---
+       */
+
+      // 1. Get the user's preference (saved or default to system)
+      function getSavedThemePreference() {
+        return localStorage.getItem("theme") || "system";
+      }
+
+      // 2. Check system status
+      function getSystemTheme() {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+
+      // 3. Determine the actual visual theme to apply
+      function getEffectiveTheme() {
+        // Priority 1: Page Specific Override (Fixed for that page)
+        if (currentActivePageId) {
+          const linkConfig = findLinkConfig(currentActivePageId);
+          if (
+            linkConfig &&
+            linkConfig.theme &&
+            ["light", "dark"].includes(linkConfig.theme)
+          ) {
+            return linkConfig.theme;
+          }
+        }
+
+        // Priority 2: Config Override (Global forced override in code)
+        const override = appConfig.themeConfig?.forcedOverride;
+        if (override && override !== "default") {
+          if (override === "light") return "light";
+          if (override === "dark") return "dark";
+          if (override === "system") return getSystemTheme();
+        }
+
+        // Priority 3: User Preference (LocalStorage)
+        const saved = getSavedThemePreference();
+
+        // Priority 4: System Theme
+        if (saved === "system") return getSystemTheme();
+
+        return saved; // 'light' or 'dark'
+      }
+
+      // 4. Update the Icon to reflect the USER'S SETTING (the toggle state)
+      // NOTE: The icon reflects what "mode" the user has selected (System/Light/Dark),
+      // even if the current page is forcing a specific look.
+      function updateThemeIcon() {
+        const currentPref = getSavedThemePreference(); // Get the stored preference, not the effective visual
+        const btn = document.getElementById("theme-toggle");
+        if (!btn) return;
+
+        let iconName = "monitor";
+        if (currentPref === "light") {
+          iconName = "sun";
+        } else if (currentPref === "dark") {
+          iconName = "moon";
+        }
+
+        // Clear and rebuild to ensure Lucide catches the change
+        btn.innerHTML = "";
+        const icon = document.createElement("i");
+        icon.setAttribute("data-lucide", iconName);
+        icon.id = "theme-icon";
+        icon.className = "w-5 h-5";
+        btn.appendChild(icon);
+
+        // Re-render icons
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      // 5. Apply the calculated theme to the DOM
+      function applyTheme() {
+        const visualTheme = getEffectiveTheme();
+
+        if (visualTheme === "dark") {
+          body.classList.add("dark");
+        } else {
+          body.classList.remove("dark");
+        }
+
+        updateThemeIcon();
+      }
+
+      // 6. Toggle Handler: Cycles System -> Light -> Dark -> System
+      // This updates the GLOBAL preference. If a page has a fixed theme,
+      // the visual might not change immediately, but the preference is saved.
+      function toggleTheme() {
+        const current = getSavedThemePreference();
+        let next = "light";
+
+        if (current === "system") next = "light";
+        else if (current === "light") next = "dark";
+        else if (current === "dark") next = "system";
+
+        // Save to local storage
+        localStorage.setItem("theme", next);
+
+        // Apply changes
+        applyTheme();
+      }
+
+      /**
+       * Closes the Context Switcher dropdown menu.
+       */
+      function closeContextSwitcher() {
+        if (!contextMenu.classList.contains("hidden")) {
+          contextMenu.classList.add("hidden");
+          contextChevron.classList.remove("rotate-180");
+        }
+      }
+
+      function toggleContextSwitcher() {
+        contextMenu.classList.toggle("hidden");
+        if (contextMenu.classList.contains("hidden")) {
+          contextChevron.classList.remove("rotate-180");
+        } else {
+          contextChevron.classList.add("rotate-180");
+        }
+      }
+
+      function switchContext(contextId) {
+        const context = appConfig.contexts.find((c) => c.id === contextId);
+        if (!context) return;
+
+        closeContextSwitcher();
+
+        if (context.isExternal) {
+          window.location.href = context.url;
+          return;
+        }
+
+        currentAppContextId = contextId;
+
+        if (currentAppNameSpan) {
+          currentAppNameSpan.textContent = context.name.replace(
+            " (App Hub)",
+            ""
+          );
+        }
+
+        renderPage("home");
+      }
+
+      /**
+       * --- DYNAMIC CHROME RENDERING ---
+       */
+      function renderAppChrome() {
+        // 1. Render Logo
+        const logoContainer = document.getElementById("logo-image-container");
+        if (logoContainer) {
+          logoContainer.innerHTML = "";
+
+          const img = document.createElement("img");
+          img.src = appConfig.logo.imageUrl;
+          img.alt = appConfig.logo.text;
+          img.classList.add("w-full", "h-full", "rounded-full", "object-cover");
+          logoContainer.appendChild(img);
+
+          currentAppNameSpan.textContent = appConfig.logo.name;
+        }
+
+        // 2. Render Context Switcher Menu
+        const contextMenuEl = document.getElementById("context-switcher-menu");
+        if (contextMenuEl) {
+          contextMenuEl.innerHTML = "";
+          appConfig.contexts.forEach((context, index) => {
+            const link = document.createElement("a");
+            link.href = "#";
+            link.onclick = () => {
+              switchContext(context.id);
+              return false;
+            };
+
+            let linkClasses =
+              "block p-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-gray-700/50 transition-colors duration-300";
+
+            if (context.isExternal) {
+              linkClasses += " whitespace-nowrap";
+            }
+
+            link.className = linkClasses;
+
+            let iconHtml;
+            if (context.icon.startsWith("http")) {
+              iconHtml = `<img src="${context.icon}" alt="${context.id} icon" class="w-4 h-4 inline-block mr-2 rounded-full object-cover">`;
+            } else {
+              iconHtml = `<i data-lucide="${context.icon}" class="w-4 h-4 inline-block mr-2 text-${context.color}-500"></i>`;
+            }
+
+            link.innerHTML = `${iconHtml}<span>${context.name}</span>`;
+
+            contextMenuEl.appendChild(link);
+
+            if (index < appConfig.contexts.length - 1) {
+              const divider = document.createElement("div");
+              divider.className =
+                "my-1 border-t border-gray-300/50 dark:border-gray-600/50";
+              contextMenuEl.appendChild(divider);
+            }
+          });
+        }
+
+        // 3. Render Navigation Bars
+        ["desktop-nav", "mobile-nav"].forEach((navId) => {
+          const navEl = document.getElementById(navId);
+          if (navEl) {
+            navEl.innerHTML = "";
+            appConfig.navLinks.forEach((link) => {
+              if (navId === "mobile-nav" && link.desktopOnly) return;
+
+              const button = document.createElement("button");
+              button.id = `btn-${link.id}${
+                navId === "mobile-nav" ? "-mobile" : ""
+              }`;
+              button.setAttribute("data-page-id", link.id);
+              button.className =
+                "nav-button flex items-center justify-center w-14 h-14 rounded-2xl text-gray-700 dark:text-gray-300 hover:text-blue-600 hover:bg-white/30 dark:hover:bg-gray-700/50 hover:shadow-soft-inset dark:hover:shadow-dark-soft-inset transition-all duration-300";
+              button.innerHTML = `<i data-lucide="${link.icon}" class="w-6 h-6"></i>`;
+
+              navEl.appendChild(button);
+            });
+          }
+        });
+
+        // 4. Handle Profile Icon
+        const profileButton = document.getElementById("btn-profile");
+        if (profileButton && appConfig.logo.profileIconUrl) {
+          profileButton.innerHTML = `
+                    <img src="${appConfig.logo.profileIconUrl}" alt="Profile Icon" class="w-5 h-5 rounded-full object-cover">
+                `;
+        }
+
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+
+      /**
+       * --- CONTENT & ROUTING ---
+       */
+      function findLinkConfig(pageId) {
+        let targetLink = appConfig.navLinks.find((link) => link.id === pageId);
+        if (targetLink) return targetLink;
+
+        targetLink = appConfig.utilityLinks.find((link) => link.id === pageId);
+        if (targetLink) return targetLink;
+
+        if (pageId === "home") {
+          return appConfig.contexts.find((c) => c.id === currentAppContextId);
+        }
+
+        if (pageId === "404-error-page") {
+          return appConfig.utilityLinks.find(
+            (link) => link.id === "404-error-page"
+          );
+        }
+
+        return null;
+      }
+
+      function renderPage(pageId, isFromUrlParam = false, linkOverride = "") {
+        let targetLink = findLinkConfig(pageId);
+
+        if (!targetLink && isFromUrlParam) {
+          console.warn(
+            `Page ID '${pageId}' from URL not found. Loading 404 page.`
+          );
+          pageId = "404-error-page";
+          targetLink = findLinkConfig(pageId);
+        }
+
+        if (!targetLink) return;
+
+        // Update current active page ID and apply theme immediately
+        currentActivePageId = pageId;
+        applyTheme();
+
+        // Handle Search Bar Visibility
+        const searchBarContainer = document.getElementById(
+          "search-bar-container"
+        );
+        if (searchBarContainer) {
+          if (targetLink.isSearchable === true) {
+            searchBarContainer.classList.remove("hidden");
+            searchBarContainer.classList.add("flex", "items-center");
+          } else {
+            searchBarContainer.classList.add("hidden");
+            searchBarContainer.classList.remove("flex", "items-center");
+          }
+        }
+
+        let target = targetLink.url;
+        if (linkOverride) {
+          target = linkOverride;
+        }
+
+        document.querySelectorAll(".app-page").forEach((page) => {
+          page.classList.add("hidden");
+        });
+
+        const containerId = pageId === "404-error-page" ? "home" : pageId;
+        const containerPage = document.getElementById(containerId);
+
+        if (!containerPage) return;
+
+        containerPage.classList.remove("hidden");
+
+        let iframe = containerPage.querySelector(".page-iframe");
+        if (!iframe) {
+          iframe = document.createElement("iframe");
+          iframe.classList.add("page-iframe");
+          iframe.setAttribute("loading", "eager");
+          iframe.setAttribute("title", targetLink.title || pageId);
+          containerPage.appendChild(iframe);
+        }
+
+        if (!iframe.hasAttribute("data-focus-listener-attached")) {
+          iframe.addEventListener("focus", closeContextSwitcher);
+          iframe.setAttribute("data-focus-listener-attached", "true");
+        }
+
+        if (target) {
+          if (iframe.src !== target) {
+            iframe.src = target;
+          }
+        }
+
+        // Update Active State
+        const inactiveClasses = [
+          "text-gray-700",
+          "dark:text-gray-300",
+          "hover:text-blue-600",
+          "hover:bg-white/30",
+          "dark:hover:bg-gray-700/50",
+          "hover:shadow-soft-inset",
+          "dark:hover:shadow-dark-soft-inset",
+        ];
+        const activeClasses = [
+          "bg-white/50",
+          "dark:bg-gray-700/50",
+          "shadow-soft-inset",
+          "dark:shadow-dark-soft-inset",
+          "text-blue-600",
+          "dark:text-blue-400",
+        ];
+        const inactiveUtilityClasses = [
+          "text-gray-700",
+          "dark:text-gray-300",
+          "hover:text-blue-500",
+          "hover:shadow-soft-inset",
+          "dark:hover:shadow-dark-soft-inset",
+        ];
+        const activeUtilityClasses = [
+          "text-blue-600",
+          "dark:text-blue-400",
+          "bg-white/50",
+          "dark:bg-gray-700/50",
+        ];
+
+        document.querySelectorAll(".nav-button").forEach((btn) => {
+          if (
+            btn.id.includes("btn-settings") ||
+            btn.id.includes("btn-profile")
+          ) {
+            btn.classList.remove(...activeUtilityClasses);
+            btn.classList.add(...inactiveUtilityClasses);
+          } else {
+            btn.classList.remove(...activeClasses);
+            btn.classList.add(...inactiveClasses);
+          }
+        });
+
+        if (pageId !== "404-error-page") {
+          const activeButtons = document.querySelectorAll(
+            `[data-page-id="${pageId}"]`
+          );
+          activeButtons.forEach((btn) => {
+            if (
+              btn.id.includes("btn-settings") ||
+              btn.id.includes("btn-profile")
+            ) {
+              btn.classList.add(...activeUtilityClasses);
+              btn.classList.remove(...inactiveUtilityClasses);
+            } else {
+              btn.classList.add(...activeClasses);
+              btn.classList.remove(...inactiveClasses);
+            }
+          });
+        }
+      }
+
+      function performIframeSearch() {
+        const searchInput = document.getElementById("iframe-search-input");
+        const query = searchInput.value.trim();
+
+        const visiblePage = document.querySelector(".app-page:not(.hidden)");
+        if (!visiblePage) return;
+
+        const iframe = visiblePage.querySelector(".page-iframe");
+        const pageId = visiblePage.id;
+        const targetLink = findLinkConfig(pageId);
+
+        if (!iframe || !targetLink) return;
+
+        let baseUrl = targetLink.url;
+
+        let url;
+        try {
+          const staticBaseUrl = baseUrl.split("?")[0];
+          url = new URL(staticBaseUrl);
+        } catch (e) {
+          console.error("Invalid base URL in config.", baseUrl, e);
+          return;
+        }
+
+        if (query) {
+          url.searchParams.set("search", query);
+        } else {
+          url.searchParams.delete("search");
+        }
+
+        const newSrc = url.toString();
+
+        if (iframe.src !== newSrc) {
+          iframe.src = newSrc;
+        }
+      }
+
+      function getURLParameter(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        const regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+        const results = regex.exec(location.search);
+        return results === null
+          ? ""
+          : decodeURIComponent(results[1].replace(/\+/g, " "));
+      }
+      // Smooth Scroll
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.querySelector(anchor.getAttribute("href")).scrollIntoView({
+            behavior: "smooth",
+          });
+        });
+      });
+      // --- INITIALIZATION ---
+      document.addEventListener("DOMContentLoaded", () => {
+        renderAppChrome();
+        applyTheme();
+
+        window
+          .matchMedia("(prefers-color-scheme: dark)")
+          .addEventListener("change", () => {
+            const userPref = getSavedThemePreference();
+            const override = appConfig.themeConfig?.forcedOverride;
+            if (
+              userPref === "system" &&
+              (!override || override === "default" || override === "system")
+            ) {
+              applyTheme();
+            }
+          });
+
+        document
+          .querySelectorAll(".nav-button[data-page-id]")
+          .forEach((element) => {
+            element.addEventListener("click", () => {
+              renderPage(element.getAttribute("data-page-id"));
+              const searchInput = document.getElementById(
+                "iframe-search-input"
+              );
+              if (searchInput) searchInput.value = "";
+            });
+          });
+
+        const leftPanelContainer = document.getElementById(
+          "left-panel-container"
+        );
+        document.addEventListener("click", (event) => {
+          if (
+            !contextMenu.classList.contains("hidden") &&
+            leftPanelContainer &&
+            !leftPanelContainer.contains(event.target)
+          ) {
+            closeContextSwitcher();
+          }
+        });
+
+        const searchButton = document.getElementById("iframe-search-button");
+        const searchInput = document.getElementById("iframe-search-input");
+
+        if (searchButton && searchInput) {
+          searchButton.addEventListener("click", performIframeSearch);
+          searchInput.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              performIframeSearch();
+            }
+          });
+        }
+
+        const urlPageId = getURLParameter("page");
+        const externalLinkOverride = getURLParameter("link");
+        const initialPageId = urlPageId || "home";
+
+        renderPage(initialPageId, !!urlPageId, externalLinkOverride);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <!-- Load Tailwind CSS (kept for the rest of the page) -->
+    <script src="./src/tw.js"></script>
+    <link rel="stylesheet" href="./src/universal.css">
+    <script>
+      tailwind.config = {
+        darkMode: "class", // Enable dark mode using the 'dark' class on <html>
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              // Only blue accent remains
+              "accent-blue": "#4a90e2",
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Custom styles for the entire page -->
+    <style>
+      /* Ensures body covers the full viewport and allows scrolling */
+      html,
+        body {
+        overflow-x: hidden;
+        overflow-y: transparent;  
+        height: 100%;
+        margin: 0;
+        font-family: "Inter", sans-serif;  
+      }
+      /* Custom Scrollbar Styles */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 10px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: transparent;
+        border-radius: 10px;
+        border: 2px solid transparent;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: transparent;
+      }
+      /* The iframe element styles (positioning handled by Tailwind classes below) */
+      #background-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        /* Prevents the iframe content from intercepting mouse clicks */
+        pointer-events: none;
+        object-fit: cover;
+      }
+
+      /* Responsive video container for 16:9 aspect ratio (Pure CSS) */
+      .video-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 35%; /* 16:9 Aspect Ratio (9 / 16 = 0.5625) */
+        height: 0;
+        overflow: hidden;
+        border-radius: 0.75rem; /* rounded-xl */
+      }
+      .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      @media (max-width: 768px) {
+        .video-container {
+          padding-bottom: 56.25%; /* 16:9 Aspect Ratio (9 / 16 = 0.5625) */
+        }
+      } /* --- PURE CSS FIX FOR VIDEO SIZE AND STYLING --- */
+      #video-embed-container {
+        /* 1. Size and Centering */
+        max-width: 600px; /* Fixed size control as requested */
+        margin: 0 auto; /* Centers the block element (equivalent to mx-auto) */
+
+        /* 2. Border (equivalent to border-4 border-gray-300) */
+        border: 4px solid var(--video-border);
+
+        /* 3. Shadow (equivalent to shadow-2xl) */
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      /* Dark mode specific styles for the video container (equivalent to dark:border-gray-700) */
+      .dark #video-embed-container {
+        border-color: #374151;
+        /* Adjust shadow for visibility in dark mode */
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
+          0 10px 10px -5px rgba(0, 0, 0, 0.2);
+      }
+      /* ------------------------------------------------ */
+
+      /* Custom background style for the new video section */
+      .video-showcase-bg {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        /* Default dark blue background for fallback (Light mode will rely on Tailwind bg-white) */
+        background-color: var(--video-showcase-bg);
+      }
+
+      /* Ensure the earth image container doesn't shrink unnecessarily */
+      #earth-image {
+        min-width: 15rem; /* 256px */
+      }
+
+      /* NEW PREMIUM STYLE: Subtle glow for the main title */
+      .premium-title-shadow {
+        text-shadow: 0 0 15px rgba(74, 144, 226, 0.7),
+          0 0 30px rgba(74, 144, 226, 0.4);
+      }
+
+      /* Icon for theme toggle */
+      .sun-icon {
+        display: none;
+      }
+      .dark .moon-icon {
+        display: none;
+      }
+      .dark .sun-icon {
+        display: block;
+      }
+
+      /* Custom style for the feature blocks */
+      .feature-block {
+        padding: 2.5rem 0; /* py-10 */
+      }
+      /* NOTE: The alternating backgrounds are now handled by Tailwind classes on the feature blocks themselves */
+    </style>
+  </head>
+  <!-- UPDATED: Removed hardcoded colors. They are now controlled by the JS/Tailwind classes applied to <html> -->
+  <body
+    class="antialiased text-gray-900 bg-white dark:text-white dark:bg-black transition-colors duration-500"
+  >
+    <!-- 3. Main Content (Hero Section) -->
+    <div
+      class="min-h-screen w-full flex items-center justify-start p-4 relative z-20 lg:pl-20"
+    >
+      <!-- 1. Iframe Container (Background) - ABSOLUTE to this main div, SCROLLS with content -->
+      <div id="iframe-container" class="absolute inset-0 z-0 overflow-hidden">
+        <!-- The iframe source will be set by JavaScript -->
+        <iframe
+          id="background-iframe"
+          allow="autoplay; fullscreen; encrypted-media"
+        ></iframe>
+      </div>
+
+      <!-- 2. Dark Overlay for Text Readability -->
+      <div
+        id="content-overlay"
+        class="absolute inset-0 z-10 bg-white bg-opacity-10 dark:bg-black dark:bg-opacity-20 pointer-events-none"
+      ></div>
+
+      <!-- Inner Content (Text and Buttons) -->
+      <div class="max-w-2xl text-left relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <!-- Title Text - text-5xl md:text-6xl -->
+        <!-- Buttons Container -->
+          <!-- Button size reduced slightly -->
+          
+          <div class="mt-6 flex space-x-3 text-5xl md:text-7xl font-extrabold text-center mb-12 md:mb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <button
+              id="start-button"
+              class="px-6 py-4 bg-accent-blue border-blue-400 text-white text-base rounded-xl shadow-[0_0_15px_rgba(74,144,226,0.6)] hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 border border-accent-blue text-xl"
+            >
+              Join In a Clan
+            </button>
+          </div>
+          
+          <div class="mt-6 flex space-x-3 text-5xl md:text-7xl font-extrabold text-center mb-12 md:mb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <!-- Button for CG: Changed from purple to blue border/shadow -->
+            <button
+              id="cg-button"
+              class="px-6 py-4 bg-white dark:bg-black border-gray-400 text-gray-900 dark:text-white text-base rounded-xl shadow-[0_0_15px_rgba(74,144,226,0.6)] hover:bg-gray-200 dark:hover:bg-gray-900 transition-all duration-300 transform hover:scale-105 border-2 border-accent-blue text-xl"
+            >
+              Create a Clan 
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Logo Bar (Flows after the main content, visible on scroll) -->
+    <div
+      class="relative w-full bg-white/90 backdrop-blur-sm p-3 z-30 border-t border-gray-200 dark:bg-black/90 dark:border-gray-800 shadow-inner shadow-gray-300/50 dark:shadow-gray-700/50"
+    >
+      <div
+        id="logo-bar-content"
+        class="max-w-5xl mx-auto flex justify-around items-center space-x-4 sm:space-x-8 py-3"
+      >
+        <!-- Logos will be injected here by JavaScript -->
+      </div>
+    </div>
+
+    <!-- 5. Section: Why? (Core Pillars) - ZIG-ZAG LAYOUT (BLUE/WHITE/BLACK ONLY) -->
+    <section
+      id="why-section"
+      class="py-16 md:py-24 text-gray-900 dark:text-white transition-colors duration-500 bg-white dark:bg-black"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <!-- Section Title: Updated to "Why?" -->
+        <h2
+          class="text-5xl md:text-7xl font-extrabold text-center mb-12 md:mb-16 text-accent-blue tracking-tighter"
+        >
+          Why?
+        </h2>
+
+        <!-- Main Vision Introduction: Changed purple accents to blue -->
+        <div
+          class="max-w-3xl mx-auto text-center p-6 rounded-3xl bg-gray-100 dark:bg-gray-800 shadow-2xl border-b-8 border-accent-blue/50"
+        >
+          <!-- Vision Title - text-2xl: Changed to blue -->
+          <h3 class="text-2xl font-bold mb-3 text-accent-blue"></h3>
+          <!-- Subtitle (Kept small) -->
+          <p
+            class="text-xs uppercase text-gray-500 dark:text-gray-400 mb-4 tracking-widest"
+          >
+            C-G CLOUD GAMING
+          </p>
+          <!-- Vision Body - text-base -->
+          <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+            CG is the ultimate platform for gamers who want to experience
+            high-performance gaming without the need for expensive hardware.
+          </p>
+        </div>
+      </div>
+
+      <!-- NEW: VISUAL PILLAR BLOCKS (Zig-Zag Layout) -->
+      <div class="w-full">
+        <!-- PILLAR 1: Next-Gen Development (Image Left, Text Right) -->
+        <div
+          class="py-20 bg-gray-100 dark:bg-gray-900 border-y border-gray-200 dark:border-gray-700"
+        >
+          <div
+            class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 px-4 sm:px-6 lg:px-8"
+          >
+            <!-- Image Block (Left) - Uses Blue text placeholder -->
+            <div class="md:w-1/2">
+              <img
+                src="https://miro.medium.com/0*Eh7NNFpKQS40L7ln"
+                alt="eliminating expensive hardware"
+                class="w-full object-cover rounded-3xl shadow-2xl shadow-accent-blue/50 transform transition duration-500 hover:scale-[1.02] border-4 border-accent-blue/30"
+              />
+            </div>
+
+            <!-- Text Block (Right) -->
+            <div class="md:w-1/2 md:text-left text-center">
+              <h4
+                class="text-4xl font-extrabold text-accent-blue mb-4 leading-tight tracking-tighter"
+              >
+                Minimum Hardware
+              </h4>
+              <p
+                class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
+              >
+                The ultimate platform for gamers who want to experience
+                high-performance gaming without the need for expensive hardware.
+                All without worrying about storage space or hardware
+                limitations. The minimum recommended for hardware to play are
+                512 MB ram, 100 MB space, 0.1 CPU and any device with an
+                internet connection where you can play those games .
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PILLAR 2: Empowering Potential (Text Left, Image Right) -->
+        <div class="py-20 bg-white dark:bg-black">
+          <div
+            class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row-reverse items-center gap-12 px-4 sm:px-6 lg:px-8"
+          >
+            <!-- Image Block (Right) - Uses Blue text placeholder -->
+            <div class="md:w-1/2">
+              <img
+                src="https://raw.githubusercontent.com/NepsenX/home/refs/heads/main/Gemini_Generated_Image_4xrx9l4xrx9l4xrx.png"
+                alt="Eliminating Installations"
+                class="w-full object-cover rounded-3xl shadow-2xl shadow-accent-blue/50 transform transition duration-500 hover:scale-[1.02] border-4 border-accent-blue/30"
+              />
+            </div>
+
+            <!-- Text Block (Left) - Changed title color to blue -->
+            <div class="md:w-1/2 md:text-left text-center">
+              <h4
+                class="text-4xl font-extrabold text-accent-blue mb-4 leading-tight tracking-tighter"
+              >
+                Eliminating Installations
+              </h4>
+              <p
+                class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
+              >
+                Whether you’re using a PC, smartphone, or tablet, the CG ensures
+                seamless gameplay, stunning visuals, and minimal lag, all while
+                eliminating the need for downloads or installations.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PILLAR 3: Future-Ready Resilience (Image Left, Text Right) -->
+        <div
+          class="py-20 bg-gray-100 dark:bg-gray-900 border-y border-gray-200 dark:border-gray-700"
+        >
+          <div
+            class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 px-4 sm:px-6 lg:px-8"
+          >
+            <!-- Image Block (Left) - Uses Blue text placeholder -->
+            <div class="md:w-1/2">
+              <img
+                src="https://www.ciotechoutlook.com/newsimages/540x370_2NuDQJfx.jpg"
+                alt="Ultimate Possibilities"
+                class="w-full object-cover rounded-3xl shadow-2xl shadow-accent-blue/50 transform transition duration-500 hover:scale-[1.02] border-4 border-accent-blue/30"
+              />
+            </div>
+
+            <!-- Text Block (Right) -->
+            <div class="md:w-1/2 md:text-left text-center">
+              <h4
+                class="text-4xl font-extrabold text-accent-blue mb-4 leading-tight tracking-tighter"
+              >
+                Ultimate Possibilities
+              </h4>
+              <p
+                class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
+              >
+                Whether you're a casual player or a competitive gamer, CG opens
+                up a world of possibilities, offering a hassle-free,
+                high-quality gaming experience anytime, anywhere.Users can jump
+                into games instantly and enjoy multiplayer features, social
+                integration, and more, all without worrying about storage space
+                or hardware limitations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Section: Video Showcase -->
+    <section
+      id="video-showcase"
+      class="py-20 md:py-32 text-gray-900 dark:text-white video-showcase-bg bg-white dark:bg-black transition-colors duration-500"
+    >
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <!-- Company Title - text-5xl md:text-6xl -->
+        <h2 class="text-5xl md:text-6xl font-extrabold mb-12 tracking-tighter">
+          <span class="text-gray-900 dark:text-white">C</span
+          ><span class="text-accent-blue">G</span>
+        </h2>
+
+        <!-- Video Container: PURE CSS size and styling is applied via the ID selector in the <style> block -->
+        <div id="video-embed-container" class="video-container">
+          <!-- Video iframe will be injected by JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Footer Section (UPDATED FOR VISUAL SEPARATION) -->
+    <footer
+      id="app-footer"
+      class="bg-white dark:bg-black py-16 md:py-20 text-gray-900 dark:text-white transition-colors duration-500 shadow-gray-300/50 dark:shadow-gray-700/50"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+          <!-- Left Content: Text and QR Code -->
+          <div class="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
+            <p
+              class="text-xs uppercase text-gray-500 dark:text-gray-400 tracking-widest mb-1"
+            >
+              Created by
+            </p>
+            <!-- Title Reduced: text-5xl -> text-4xl -->
+            <h3 class="text-4xl font-extrabold mb-4">
+              <span class="text-gray-900 dark:text-white">NEPSEN</span
+              ><span class="text-accent-blue">X</span>
+            </h3>
+            <!-- Body Text Reduced: text-base -> text-sm -->
+            <p
+              class="text-sm leading-relaxed mb-4 text-gray-700 dark:text-gray-300 max-w-xs md:max-w-sm mx-auto md:mx-0"
+            >
+              We build future for people, whom are try to better. Our targets
+              are very shine for all people.
+            </p>
+
+            <!-- QR Code Image - Updated classes to remove rounded-lg and shadow-xl for a borderless look -->
+            <img
+              id="qr-code-image"
+              src=""
+              alt="QR Code Link"
+              class="w-24 h-24 mt-4 mx-auto md:mx-0 rounded-none"
+              onerror="this.src='https://placehold.co/150x150/000000/FFFFFF?text=QR+Failed:Check+Console'; this.style.display='block';"
+            />
+          </div>
+
+          <!-- Right Content: Earth Image - Size reduced: w-64 h-64 -> w-56 h-56 -->
+          <div class="md:w-1/2 flex justify-center md:justify-end">
+            <!-- Earth Image -->
+            <img
+              id="earth-image"
+              src=""
+              alt="Earth Globe"
+              class="w-56 h-56 object-contain transition-transform duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-accent-blue/50 rounded-full"
+            />
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- JavaScript to handle configuration and interaction -->
+    <script>
+      // Set the log level for debugging
+      console.log("App loaded. Initializing...");
+
+      // Define your configuration dictionary here (renamed to CONFIG)
+      // MOVED CONFIG DEFINITION TO THE TOP OF THE SCRIPT BLOCK TO AVOID 'ReferenceError: can't access lexical declaration 'CONFIG' before initialization'
+      const CONFIG = {
+        // Main Content Configuration
+        BACKGROUND_URL: "./iframe/clan_bg.html",
+        START_LINK: "?join=true",
+        CG_LINK: "?create=true",
+
+        // Video Section Configuration
+        // FIX: Replaced non-working video ID with a known good placeholder
+        VIDEO_URL: "https://www.youtube.com/embed/DNm3YY6TwmM",
+        // UPDATED: Added separate configurations for dark and light theme backgrounds
+        VIDEO_BG_IMAGE_DARK:
+          "https://raw.githubusercontent.com/NepsenX/home/refs/heads/main/Copilot_20251114_115720gfgf.png",
+        VIDEO_BG_IMAGE_LIGHT:
+          "https://cdn.create.vista.com/api/media/small/57075459/stock-photo-winter-day-in-the-mountains",
+
+        // Footer Section Configuration (NEW)
+        FOOTER_QR_LINK: "https://nepsenx.byethost7.com",
+        // CONFIRMED: Using the specific Earth image URL provided by the user
+        FOOTER_EARTH_IMAGE:
+          "https://homepage244.my.canva.site/_assets/scenes/07cc46e4d8eb3321ba5c3d30121c4cb0.png",
+
+        // Logo Configuration: Use this array to set your image links and destination links
+        LOGO_LINKS: [
+          // Replace placeholder links with your actual image and destination URLs
+          {
+            src: "https://uploads.onecompiler.io/438cc35sk/43t6k2xht/Copilot_20250724_112130_1_-removebg-preview.png",
+            href: "https://opena.22web.org",
+          },
+          {
+            src: "https://uploads.onecompiler.io/438cc35sk/43ekedjqg/Screenshot_2025-04-12_175711-Photoroom-fotor-20250412183519-removebg-preview.png",
+            href: "https://neodot.22web.org",
+          },
+          {
+            src: "https://uploads.onecompiler.io/438cc35sk/43etbxnkm/th-removebg-preview%20(4)%20(4).png",
+            href: "https://vb.22web.org",
+          },
+          {
+            src: "https://uploads.onecompiler.io/438cc35sk/43etbxnkm/th-removebg-preview%20(2)%20(2).png",
+            href: "https://cg.22web.org",
+          },
+          {
+            src: "https://uploads.onecompiler.io/438cc35sk/43g7ssatu/image-removebg-preview%20(2).png",
+            href: "https://ishahi.22web.org",
+          },
+          {
+            src: "https://uploads.onecompiler.io/438cc35sk/43cge3a6x/BasiKno%20logo%20representing%20Mathematics,%20Physics,%20and%20Chemistry%20in%20a%20minimalist,%20evergreen%20style.png",
+            href: "https://basikno.22web.org",
+          },
+          {
+            src: "https://raw.githubusercontent.com/NepsenX/home/refs/heads/main/Web_Photo_Editor_3_-removebg-preview(2).png",
+            href: "https://adupter.22web.org",
+          },
+        ],
+      };
+
+      // --- Theme Management Script (FIXED) ---
+      const systemThemeQuery = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      );
+
+      // Function to determine the correct theme based on priority
+      function getCurrentTheme() {
+        // 1. Check Local Storage first
+        const localTheme = localStorage.getItem("theme");
+
+        if (localTheme === "dark") {
+          return "dark";
+        }
+        if (localTheme === "light") {
+          return "light";
+        }
+
+        // 2. Fallback to System Preference if local storage is empty
+        return systemThemeQuery.matches ? "dark" : "light";
+      }
+
+      function applyTheme() {
+        const theme = getCurrentTheme();
+        const html = document.documentElement;
+
+        // Remove both classes first
+        html.classList.remove("light", "dark");
+        // Add the current theme class
+        html.classList.add(theme);
+
+        // Re-render video section if needed
+        if (typeof renderVideoSection === "function") {
+          renderVideoSection();
+        }
+      }
+
+      // Function to toggle between light and dark mode
+      function toggleTheme() {
+        const currentTheme = getCurrentTheme();
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+        // Save the new preference to local storage
+        localStorage.setItem("theme", newTheme);
+
+        // Apply the new theme
+        applyTheme();
+      }
+
+      // Initial load
+      applyTheme();
+
+      // Listen for System Theme changes (only effective if no local override)
+      systemThemeQuery.addEventListener("change", () => {
+        if (!localStorage.getItem("theme")) {
+          applyTheme();
+        }
+      });
+
+      // Listen for Local Storage changes (e.g., changed in another tab/component)
+      window.addEventListener("storage", (event) => {
+        if (event.key === "theme") {
+          applyTheme();
+        }
+      });
+      // --- End Theme Management Script ---
+
+      // Function to dynamically render the logos
+      function renderLogos() {
+        const logoContainer = document.getElementById("logo-bar-content");
+        if (!logoContainer) return;
+
+        CONFIG.LOGO_LINKS.forEach((logo) => {
+          const a = document.createElement("a");
+          a.href = logo.href;
+          a.target = "_blank"; // Open in new tab
+          // Responsive spacing and hover effect
+          a.className =
+            "flex justify-center items-center p-1 md:p-2 hover:scale-110 transition-transform duration-300 transform rounded-full hover:shadow-lg";
+          a.title = `Visit: ${logo.href}`;
+
+          const img = document.createElement("img");
+          img.src = logo.src;
+          img.alt = "Logo";
+          // Fixed size for consistency
+          img.className = "h-10 w-10 md:h-12 w-12 object-contain";
+
+          a.appendChild(img);
+          logoContainer.appendChild(a);
+        });
+      }
+
+      // Function to embed the video and set the background
+      function renderVideoSection() {
+        const videoContainer = document.getElementById("video-embed-container");
+        const showcaseSection = document.getElementById("video-showcase");
+
+        // Determine if dark mode is active to pick the correct background image
+        const isDarkMode = document.documentElement.classList.contains("dark");
+
+        // 1. Set the background image via CSS style, based on theme
+        if (showcaseSection) {
+          const bgImage = isDarkMode
+            ? CONFIG.VIDEO_BG_IMAGE_DARK
+            : CONFIG.VIDEO_BG_IMAGE_LIGHT;
+          if (bgImage) {
+            showcaseSection.style.backgroundImage = `url('${bgImage}')`;
+          }
+        }
+
+        // 2. Embed the video iframe (only embed if not already present)
+        if (
+          videoContainer &&
+          CONFIG.VIDEO_URL &&
+          !videoContainer.querySelector("iframe")
+        ) {
+          const videoIframe = document.createElement("iframe");
+          videoIframe.src = CONFIG.VIDEO_URL;
+          videoIframe.setAttribute("allowfullscreen", "");
+          videoIframe.setAttribute(
+            "allow",
+            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          );
+          videoContainer.appendChild(videoIframe);
+          console.log(`Video embedded from: ${CONFIG.VIDEO_URL}`);
+        }
+      }
+
+      // Function to render the footer elements (QR and Earth image)
+      function renderFooter() {
+        const qrImage = document.getElementById("qr-code-image");
+        const earthImage = document.getElementById("earth-image");
+
+        // Generate QR Code URL
+        if (qrImage && CONFIG.FOOTER_QR_LINK) {
+          // Using a third-party service to generate the QR code image
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
+            CONFIG.FOOTER_QR_LINK
+          )}`;
+          qrImage.src = qrUrl;
+          console.log(`QR Code source set to: ${qrUrl}`);
+        }
+
+        // Set Earth Image Source
+        if (earthImage && CONFIG.FOOTER_EARTH_IMAGE) {
+          earthImage.src = CONFIG.FOOTER_EARTH_IMAGE;
+          console.log(
+            `Earth image source set to: ${CONFIG.FOOTER_EARTH_IMAGE}`
+          );
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const iframe = document.getElementById("background-iframe");
+        const startButton = document.getElementById("start-button");
+        const cgButton = document.getElementById("cg-button");
+        const themeToggleButton = document.getElementById("theme-toggle");
+
+        // 1. Set the main background iframe source
+        if (iframe) {
+          iframe.src = CONFIG.BACKGROUND_URL;
+          console.log(
+            `Background iframe source set to: ${CONFIG.BACKGROUND_URL}`
+          );
+        }
+
+        // 2. Render the logos
+        renderLogos();
+
+        // 3. Render the footer
+        renderFooter();
+
+        // 4. Add event listener for Theme Toggle
+        if (themeToggleButton) {
+          themeToggleButton.addEventListener("click", toggleTheme);
+        }
+
+        // 5. Add event listeners for the buttons
+
+        // START Button logic
+        startButton.addEventListener("click", () => {
+          console.log(`Navigating to START link: ${CONFIG.START_LINK}`);
+          // In a real application, you might use: window.location.href = CONFIG.START_LINK;
+          alertBox(
+            "Action: Starting process.",
+            "Navigating to " + CONFIG.START_LINK
+          );
+        });
+
+        // PLAY ON CG Button logic
+        cgButton.addEventListener("click", () => {
+          console.log(`Navigating to PLAY ON CG link: ${CONFIG.CG_LINK}`);
+          // In a real application, you might use: window.location.href = CONFIG.CG_LINK;
+          alertBox("Action: Playing on CG.", "Navigating to " + CONFIG.CG_LINK);
+        });
+
+        // Custom Alert Box function (since window.alert() is forbidden)
+        function alertBox(title, message) {
+          // Check if a box already exists
+          if (document.getElementById("custom-alert-box")) return;
+
+          const alertHtml = `
+                    <div id="custom-alert-box" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+                        <div class="bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
+                            <h3 class="text-xl font-bold mb-3">${title}</h3>
+                            <p class="text-gray-700 dark:text-gray-300 mb-6">${message}</p>
+                            <button id="alert-close-button" class="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700 transition">
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                `;
+          document.body.insertAdjacentHTML("beforeend", alertHtml);
+
+          document
+            .getElementById("alert-close-button")
+            .addEventListener("click", () => {
+              document.getElementById("custom-alert-box").remove();
+            });
+        }
+      });
+    </script>
+  </body>
+</html>
