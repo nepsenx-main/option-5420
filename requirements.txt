@@ -1,0 +1,13 @@
+# Minimal / recommended dependencies for your script
+numpy
+psutil
+
+# Optional (GPU acceleration) - install matching your CUDA setup:
+# cupy-cuda118  # replace 118 with your CUDA version, e.g. cupy-cuda117, cupy-cuda121
+# torch  # install via the official PyTorch URL that matches your CUDA version
+# torchvision
+# torchaudio
+
+# Dev / tooling (optional)
+# ipython
+# pytest
