@@ -1,0 +1,111 @@
+# -------------------------------
+# Advanced .htaccess for static site (HTML/CSS/JS)
+# Place this file in your htdocs (document root)
+# -------------------------------
+
+# -------------------------------
+# 1) Force HTTPS (redirect HTTP -> HTTPS)
+# -------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Avoid redirect loop for CLI or internal requests
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# -------------------------------
+# 2) Disable directory listing
+# -------------------------------
+Options -Indexes
+
+# -------------------------------
+# 3) Hide dotfiles (like .git, .env, .htpasswd) and sensitive files
+# -------------------------------
+<FilesMatch "^\.|(\.env|composer\.json|package\.json|README|LICENSE)$">
+    Require all denied
+</FilesMatch>
+
+# If old Apache syntax required on some hosts, fallback:
+<IfModule !mod_authz_core.c>
+    <FilesMatch "^\.|(\.env|composer\.json|package\.json|README|LICENSE)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# -------------------------------
+# 4) Block backup / temp / dev files from being served
+# -------------------------------
+<FilesMatch "\.(bak|old|orig|sql|tar|gz|zip|log|swp|swo|psd|cache)$">
+    Require all denied
+</FilesMatch>
+
+# Fallback for older Apache:
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(bak|old|orig|sql|tar|gz|zip|log|swp|swo|psd|cache)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+
+
+# -------------------------------
+# 8) Caching for static assets (improves performance)
+# -------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access plus 60000 years"
+    ExpiresByType text/css "access plus 30000 years"
+    ExpiresByType text/javascript "access plus 30000 years"
+    ExpiresByType application/javascript "access plus 30000 years"
+    ExpiresByType image/jpeg "access plus 30000 years"
+    ExpiresByType image/png "access plus 30000 years"
+    ExpiresByType image/gif "access plus 30000 years"
+    ExpiresByType image/webp "access plus 30000 years"
+    ExpiresByType image/svg+xml "access plus 30000 years"
+    ExpiresByType application/font-woff2 "access plus 30000 years"
+</IfModule>
+
+# -------------------------------
+# 9) Prevent MIME type confusion for files served
+# -------------------------------
+<IfModule mod_mime.c>
+    AddType application/javascript js mjs
+    AddType image/svg+xml svg svgz
+    AddEncoding gzip svgz
+</IfModule>
+
+# -------------------------------
+# 10) Redirect common bad bots / block suspicious user agents (simple)
+# -------------------------------
+<IfModule mod_setenvif.c>
+    SetEnvIfNoCase User-Agent "libwww-perl" bad_bot
+    SetEnvIfNoCase User-Agent "wget" bad_bot
+    SetEnvIfNoCase User-Agent "curl" bad_bot
+</IfModule>
+
+<IfModule mod_authz_core.c>
+    <RequireAll>
+        Require all granted
+        Require not env bad_bot
+    </RequireAll>
+</IfModule>
+
+# Fallback for older Apache versions:
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+    Deny from env=bad_bot
+</IfModule>
+ErrorDocument 400 http://nepsenx.byethost7.com/homepage.html?page=error
+ErrorDocument 401 http://nepsenx.byethost7.com/homepage.html?page=error
+ErrorDocument 403 http://nepsenx.byethost7.com/homepage.html?page=error
+ErrorDocument 404 http://nepsenx.byethost7.com/homepage.html?page=error
+ErrorDocument 500 http://nepsenx.byethost7.com/homepage.html?page=error
+ErrorDocument 502 http://nepsenx.byethost7.com/homepage.html?page=error
+ErrorDocument 503 http://nepsenx.byethost7.com/homepage.html?page=error
+ErrorDocument 504 http://nepsenx.byethost7.com/homepage.html?page=error
+# -------------------------------
+# End of file
+# -------------------------------
