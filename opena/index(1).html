@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" type="image/png" href="https://uploads.onecompiler.io/438cc35sk/43t6k2xht/Copilot_20250724_112130_1_-removebg-preview.png">
+    <title>OpenA</title>
+    <style>html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,Arial}#content{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column}iframe{width:100%;height:100%;border:0}.centerWrap{width:100%;height:100%}</style>
+</head>
+<body>
+<div id="content" class="centerWrap">
+    <iframe id="appFrame"
+        title="app-frame"></iframe>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const LOADING_PAGE = params.get('loading') || 'loading.html';
+const LOGIN_PAGE   = params.get('login')   || 'login.html';
+const HOME_PAGE    = params.get('home')    || 'homepage.html';
+
+const frame = document.getElementById('appFrame');
+
+function normalize(u){
+    try { return new URL(u, location.href).href; }
+    catch (e) { return String(u); }
+}
+const N_LOADING = normalize(LOADING_PAGE);
+const N_LOGIN = normalize(LOGIN_PAGE);
+const N_HOME = normalize(HOME_PAGE);
+
+// show loading page (small timeout lets srcdoc render first)
+setTimeout(()=> frame.src = LOADING_PAGE, 10);
+
+function goHome(){ frame.src = HOME_PAGE; }
+function goLogin(){ frame.src = LOGIN_PAGE; }
+
+// 获取用户IP
+async function getUserIP() {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+           const data = await response.json();
+        return data.ip;
+    } catch (error) {
+        console.error('获取IP失败:', error);
+        return null;
+    }
+}
+
+// 检查Google Sheets中的用户数据
+async function checkUserInSheet(userIP) {
+    try {
+        const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+        const response = await fetch(`${scriptURL}?action=checkUser&ip=${userIP}`);
+        const data = await response.json();
+           return data;
+    } catch (error) {
+        console.error('检查用户失败:', error);
+           return null;
+    }
+}
+
+// 保存用户数据到localStorage
+function saveUserData(userData) {
+    localStorage.setItem('userData', JSON.stringify(userData));
+    localStorage.setItem('loggedIn', '1');
+    localStorage.setItem('user', userData.userName);
+}
+
+ 70  // receive messages from iframe: ensure it's from our iframe window
+window.addEventListener('message', (ev) => {
+    // If iframe is same-origin or file://, origin may be "null". Use source check.
+    if (ev.source !== frame.contentWindow) return;
+    const msg = ev.data;
+    if (!msg || typeof msg !== 'object') return;
+    if (msg.type === 'login') {
+        localStorage.setItem('loggedIn','1');
+        if (msg.user) localStorage.setItem('user', msg.user);
+        goHome();
+    } else if (msg.type === 'logout') {
+        localStorage.removeItem('loggedIn');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userData');
+        goLogin();
+    }
+});
+
+// storage events fire in other windows when localStorage is changed
+window.addEventListener('storage', (ev) => {
+    if (ev.key !== 'loggedIn') return;
+    if (ev.newValue === '1') goHome();
+    else goLogin();
+});
+
+// fallback polling
+let pollTimer = null;
+function startPolling(){
+    if (pollTimer) return;
+    pollTimer = setInterval(()=>{
+        const logged = localStorage.getItem('loggedIn') === '1';
+        const current = normalize(frame.src);
+        if (logged && current !== N_HOME) goHome();
+        if (!logged && current !== N_LOGIN && current !== N_LOADING) goLogin();
+    }, 2000);
+}
+
+// 检查用户登录状态并处理
+async function checkUserStatus() {
+    const loggedIn = localStorage.getItem('loggedIn');
+    if (loggedIn === '1') {
+        goHome();
+        startPolling();
+        return;
+    }
+
+    // 获取用户IP并检查
+    const userIP = await getUserIP();
+    if (userIP) {
+        const userData = await checkUserInSheet(userIP);
+        if (userData) {
+            saveUserData(userData);
+            goHome();
+        } else {
+            goLogin();
+        }
+    } else {
+        goLogin();
+    }
+    startPolling();
+}
+
+// 页面加载时检查用户状态
+window.addEventListener('load', function() {
+    checkUserStatus();
+});
+
+// 检测用户是否使用了广告拦截器，并将结果存储到localStorage
+function detectAdBlock(callback) {
+    let isBlocked = false;
+    let checkDone = 0;
+
+    // 检查1：adsbox元素
+    let testAd = document.createElement("div");
+    testAd.innerHTML = "&nbsp;";
+    testAd.className = "adsbox";
+    testAd.style.display = "block";
+    testAd.style.position = "absolute";
+    testAd.style.left = "-9999px";
+    document.body.appendChild(testAd);
+
+    setTimeout(function () {
+        if (testAd.offsetHeight === 0 || testAd.offsetParent === null) {
+            isBlocked = true;
+        }
+        testAd.remove();
+        done();
+    }, 100);
+
+    // 检查2：block adsbygoogle script
+    let script = document.createElement("script");
+    script.type = "text/javascript";
+    script.onerror = function () {
+        isBlocked = true;
+        done();
+    };
+    script.onload = function () {
+        done();
+    };
+    script.src = "https://pagead2.googlesygoogle.com/pagead/js/adsbygoogle.js";
+    document.body.appendChild(script);
+
+    function done() {
+        checkDone++;
+        if (checkDone === 2) {
+            localStorage.setItem('adblocker', isBlocked ? '1' : '0');
+            callback(isBlocked);
+        }
+    }
+}
+
+// 页面加载时检测广告拦截器
+window.addEventListener('load', function() {
+    detectAdBlock(function(isBlocked) {
+        // 可以在这里添加额外的UI交互逻辑
+        console.log('广告拦截器检测:', isBlocked ? '未启用' : '已启用');
+    });
+});
+
+// 定期重新检测广告拦截器
+setInterval(function() {
+    detectAdBlock(function(isBlocked) {
+        const currentStatus = localStorage.getItem('adblocker');
+        if (currentStatus !== (isBlocked ? '1' : '0')) {
+            localStorage.setItem('adblocker', isBlocked ? '1' : '0');
+        }
+    });
+}, 300000); // 每5分钟检测一次
+</script>
+</body>
+</html>

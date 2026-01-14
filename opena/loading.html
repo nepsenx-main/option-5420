@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenA</title>
+<style>
+  :root {
+    --accent-red: #ff2d2d;
+    --light-bg: #ffffff;
+    --light-text: #000000;
+    --dark-bg: #18191a;
+    --dark-text: #ffffff;
+  }
+
+    body {
+        overflow-x: hidden;
+        overflow-y: transparent; 
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--light-bg);
+    color: var(--light-text);
+    transition: background-color 0.4s ease, color 0.4s ease, opacity 0.8s ease;
+    opacity: 1;
+    position: relative;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .logo {
+    width: 80px;
+    max-width: 18vw;
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.85; }
+  }
+
+  .title {
+    font-size: 2rem;
+    margin-top: 1rem;
+    font-weight: bold;
+  }
+
+  .title span.red {
+    color: var(--accent-red);
+  }
+
+  .meta-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.9rem;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.7;
+  }
+
+  .meta-section .from-text {
+    margin-bottom: 5px;
+  }
+
+  .meta-section .logo-NepsenX {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .meta-logo {
+    width: 20px;
+    height: auto;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      body {
+        overflow-x: hidden;
+        overflow-y: transparent; 
+      background-color: var(--dark-bg);
+      color: var(--dark-text);
+    }
+    .title span.red {
+      color: var(--accent-red);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://uploads.onecompiler.io/438cc35sk/43t6k2xht/Copilot_20250724_112130_1_-removebg-preview.png" alt="OpenA Logo" class="logo" />
+    <div class="title">
+      Open<span class="red">A</span>
+    </div>
+  </div>
+
+  <div class="meta-section">
+    <span class="from-text">From</span>
+    <div class="logo-NepsenX">
+      <img src="https://uploads.onecompiler.io/438cc35sk/43fcju7j3/th-removebg-preview__3_-removebg-preview%20(1).png" alt="Meta Logo" class="meta-logo" />
+      <span>NepsenX</span>
+    </div>
+  </div>
+
+<script>
+  const setThemeColors = () => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = savedTheme === 'dark' || 
+                       (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.body.style.backgroundColor = prefersDark ? 'var(--dark-bg)' : 'var(--light-bg)';
+    document.body.style.color = prefersDark ? 'var(--dark-text)' : 'var(--light-text)';
+  };
+
+  setThemeColors();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setThemeColors);
+
+  // Fade out after 2.5 seconds
+  setTimeout(() => {
+    document.body.style.opacity = 0;
+  }, 2500);
+</script>
+</body>
+</html>
